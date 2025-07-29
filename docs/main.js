@@ -1,6 +1,6 @@
-(() => {
+(async () => {
 
-	const exampleSpectre = () => {
+	const exampleSpectre = async () => {
 
 		// 
 		const monotiles = new Monotiles();
@@ -13,15 +13,21 @@
 			radiusKeyPoint: 5,
 		});
 
-		document.body.appendChild(monotiles.canvas);
-
 		// 
 		monotiles.render(1);
 		monotiles.renderKeyPoints(1);
 
+		// 
+		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
+		const image = new Image();
+		image.src = URL.createObjectURL(blob);
+		await image.decode();
+
+		document.body.appendChild(image);
+
 	};
 
-	const exampleMystic = () => {
+	const exampleMystic = async () => {
 
 		// 
 		const monotiles = new Monotiles();
@@ -34,15 +40,21 @@
 			radiusKeyPoint: 5,
 		});
 
-		document.body.appendChild(monotiles.canvas);
-
 		// 
 		monotiles.render(0);
 		monotiles.renderKeyPoints(0);
 
+		// 
+		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
+		const image = new Image();
+		image.src = URL.createObjectURL(blob);
+		await image.decode();
+
+		document.body.appendChild(image);
+
 	};
 
-	const exampleClustersA = () => {
+	const exampleClustersA = async () => {
 
 		// 
 		const monotiles = new Monotiles();
@@ -55,17 +67,23 @@
 			radiusKeyPoint: 5,
 		});
 
-		document.body.appendChild(monotiles.canvas);
-
 		// 
 		monotiles.substitute();
 
 		monotiles.render(1);
 		monotiles.renderChildKeyPoints(1);
 
+		// 
+		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
+		const image = new Image();
+		image.src = URL.createObjectURL(blob);
+		await image.decode();
+
+		document.body.appendChild(image);
+
 	};
 
-	const exampleClustersB = () => {
+	const exampleClustersB = async () => {
 
 		// 
 		const monotiles = new Monotiles();
@@ -78,17 +96,23 @@
 			radiusKeyPoint: 5,
 		});
 
-		document.body.appendChild(monotiles.canvas);
-
 		// 
 		monotiles.substitute();
 
 		monotiles.render(1);
 		monotiles.renderKeyPoints(1);
 
+		// 
+		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
+		const image = new Image();
+		image.src = URL.createObjectURL(blob);
+		await image.decode();
+
+		document.body.appendChild(image);
+
 	};
 
-	const exampleSuperClustersA = () => {
+	const exampleSuperClustersA = async () => {
 
 		// 
 		const monotiles = new Monotiles();
@@ -100,8 +124,6 @@
 			lineWidth: 2,
 			radiusKeyPoint: 5,
 		});
-
-		document.body.appendChild(monotiles.canvas);
 
 		// 
 		monotiles.substitute();
@@ -110,9 +132,17 @@
 		monotiles.render(1);
 		monotiles.renderChildKeyPoints(1);
 
+		// 
+		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
+		const image = new Image();
+		image.src = URL.createObjectURL(blob);
+		await image.decode();
+
+		document.body.appendChild(image);
+
 	};
 
-	const exampleSuperClustersB = () => {
+	const exampleSuperClustersB = async () => {
 
 		// 
 		const monotiles = new Monotiles();
@@ -125,8 +155,6 @@
 			radiusKeyPoint: 5,
 		});
 
-		document.body.appendChild(monotiles.canvas);
-
 		// 
 		monotiles.substitute();
 		monotiles.substitute();
@@ -134,13 +162,21 @@
 		monotiles.render(1);
 		monotiles.renderKeyPoints(1);
 
+		// 
+		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
+		const image = new Image();
+		image.src = URL.createObjectURL(blob);
+		await image.decode();
+
+		document.body.appendChild(image);
+
 	};
 
-	exampleSpectre();
-	exampleMystic()
-	exampleClustersA();
-	exampleClustersB();
-	exampleSuperClustersA();
-	exampleSuperClustersB();
+	await exampleSpectre();
+	await exampleMystic()
+	await exampleClustersA();
+	await exampleClustersB();
+	await exampleSuperClustersA();
+	await exampleSuperClustersB();
 
 })();
