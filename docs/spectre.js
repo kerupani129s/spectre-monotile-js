@@ -16,6 +16,7 @@
 		context;
 
 		radiusKeyPoint;
+		noFill;
 
 		get canvas() {
 			return this.#canvas;
@@ -34,6 +35,7 @@
 			height = 150,
 			lineWidth = 2,
 			radiusKeyPoint = 5,
+			noFill = false,
 		} = {}) {
 
 			const canvas = document.createElement('canvas');
@@ -49,6 +51,7 @@
 			this.#canvas = canvas;
 			this.context = context;
 			this.radiusKeyPoint = radiusKeyPoint;
+			this.noFill = noFill;
 
 		};
 
@@ -228,17 +231,21 @@
 
 		render(renderer, matrix) {
 
-			if ( this.categoryID === 9 ) {
-				renderer.context.fillStyle = '#a0ffa0';
-			} else if ( this.categoryID === 10 ) {
-				renderer.context.fillStyle = '#80ffff';
-			} else {
-				renderer.context.fillStyle = '#ffffff';
+			if ( ! renderer.noFill ) {
+				if ( this.categoryID === 9 ) {
+					renderer.context.fillStyle = '#a0ffa0';
+				} else if ( this.categoryID === 10 ) {
+					renderer.context.fillStyle = '#80ffff';
+				} else {
+					renderer.context.fillStyle = '#ffffff';
+				}
 			}
 
 			const path = new Path2D();
 			path.addPath((this.#strict ? Spectre.#pathStrict : Spectre.#path), matrix);
-			renderer.context.fill(path);
+			if ( ! renderer.noFill ) {
+				renderer.context.fill(path);
+			}
 			renderer.context.stroke(path);
 
 		}
@@ -415,15 +422,16 @@
 
 		init({
 			strict = false,
-			width,
-			height,
-			lineWidth,
-			radiusKeyPoint,
+			width = 300,
+			height = 150,
+			lineWidth = 2,
+			radiusKeyPoint = 5,
 			matrix = matrixIdentity.scale(20),
+			noFill = false,
 		} = {}) {
 
 			const renderer = new Renderer();
-			renderer.init({ width, height, lineWidth, radiusKeyPoint });
+			renderer.init({ width, height, lineWidth, radiusKeyPoint, noFill });
 
 			const tiles = Monotiles.#createTiles(strict);
 
