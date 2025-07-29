@@ -17,6 +17,7 @@
 
 		radiusKeyPoint;
 		noFill;
+		noStrokeQuad;
 
 		get canvas() {
 			return this.#canvas;
@@ -36,6 +37,7 @@
 			lineWidth = 2,
 			radiusKeyPoint = 5,
 			noFill = false,
+			noStrokeQuad = false,
 		} = {}) {
 
 			const canvas = document.createElement('canvas');
@@ -52,6 +54,7 @@
 			this.context = context;
 			this.radiusKeyPoint = radiusKeyPoint;
 			this.noFill = noFill;
+			this.noStrokeQuad = noStrokeQuad;
 
 		};
 
@@ -88,24 +91,32 @@
 			}
 
 			// 
+			if ( ! renderer.noStrokeQuad ) {
+				if ( this.#categoryID === 0 ) {
+					renderer.context.strokeStyle = '#0000ff';
+				} else {
+					renderer.context.strokeStyle = '#ff0000';
+				}
+			}
+
 			if ( this.#categoryID === 0 ) {
-				renderer.context.strokeStyle = '#0000ff';
 				renderer.context.fillStyle = '#0000ff';
 			} else {
-				renderer.context.strokeStyle = '#ff0000';
 				renderer.context.fillStyle = '#ff0000';
 			}
 
 			// 
 			const points = this.#keyPoints.map(point => matrix.transformPoint(point));
 
-			const pathQuad = new Path2D();
-			pathQuad.moveTo(points[0].x, points[0].y);
-			for (const { x, y } of points.slice(1)) {
-				pathQuad.lineTo(x, y);
+			if ( ! renderer.noStrokeQuad ) {
+				const pathQuad = new Path2D();
+				pathQuad.moveTo(points[0].x, points[0].y);
+				for (const { x, y } of points.slice(1)) {
+					pathQuad.lineTo(x, y);
+				}
+				pathQuad.closePath();
+				renderer.context.stroke(pathQuad);
 			}
-			pathQuad.closePath();
-			renderer.context.stroke(pathQuad);
 
 			for (const { x, y } of points) {
 				const pathKeyPoint = new Path2D();
@@ -428,10 +439,11 @@
 			radiusKeyPoint = 5,
 			matrix = matrixIdentity.scale(20),
 			noFill = false,
+			noStrokeQuad = false,
 		} = {}) {
 
 			const renderer = new Renderer();
-			renderer.init({ width, height, lineWidth, radiusKeyPoint, noFill });
+			renderer.init({ width, height, lineWidth, radiusKeyPoint, noFill, noStrokeQuad });
 
 			const tiles = Monotiles.#createTiles(strict);
 
