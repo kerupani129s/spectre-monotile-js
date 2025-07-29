@@ -120,7 +120,7 @@
 
 		#children = [];
 
-		constructor(categoryID, keyPoints) {
+		constructor(categoryID, keyPoints = null) {
 			super(categoryID, keyPoints);
 		}
 
@@ -142,11 +142,13 @@
 
 	};
 
-	// TODO: 狭義 Spectre
 	const Spectre = class extends Tile {
 
 		static #points;
+		static #pathStrict;
 		static #path;
+
+		#strict;
 
 		static {
 
@@ -167,6 +169,39 @@
 				{ x: 0.0, y: 1.0 },
 			].filter(point => DOMPointReadOnly.fromPoint(point));
 
+			const pathStrict = new Path2D();
+			pathStrict.moveTo(points[0].x, points[0].y);
+			for (const [i, pointStart] of points.entries()) {
+				const pointEnd = points[i === points.length - 1 ? 0 : i + 1];
+				const vector = {
+					x: pointEnd.x - pointStart.x,
+					y: pointEnd.y - pointStart.y,
+				};
+				const vectorOrthogonal = {
+					x: - vector.y,
+					y: vector.x,
+				};
+				const sign = (i % 2 === 0 ? -1 : 1);
+				// 注意: 線対称なため vectorOrthogonal 方向のみ反転
+				//       一般的には 180 度回転する
+				const controlPoints = [
+					{
+						x: pointStart.x + 1 / 3 * vector.x + sign * 0.5 * vectorOrthogonal.x,
+						y: pointStart.y + 1 / 3 * vector.y + sign * 0.5 * vectorOrthogonal.y,
+					},
+					{
+						x: pointStart.x + (1 - 1 / 3) * vector.x + sign * 0.5 * vectorOrthogonal.x,
+						y: pointStart.y + (1 - 1 / 3) * vector.y + sign * 0.5 * vectorOrthogonal.y,
+					},
+				];
+				pathStrict.bezierCurveTo(
+					controlPoints[0].x, controlPoints[0].y,
+					controlPoints[1].x, controlPoints[1].y,
+					pointEnd.x, pointEnd.y,
+				);
+			}
+			pathStrict.closePath();
+
 			const path = new Path2D();
 			path.moveTo(points[0].x, points[0].y);
 			for (const { x, y } of points.slice(1)) {
@@ -176,6 +211,7 @@
 
 			// 
 			this.#points = points;
+			this.#pathStrict = pathStrict;
 			this.#path = path;
 
 		}
@@ -184,8 +220,9 @@
 			return this.#points;
 		}
 
-		constructor(categoryID, keyPoints) {
+		constructor(categoryID, strict, keyPoints = null) {
 			super(categoryID, keyPoints);
+			this.#strict = strict;
 		}
 
 		render(renderer, matrix) {
@@ -199,7 +236,7 @@
 			}
 
 			const path = new Path2D();
-			path.addPath(Spectre.#path, matrix);
+			path.addPath((this.#strict ? Spectre.#pathStrict : Spectre.#path), matrix);
 			renderer.context.fill(path);
 			renderer.context.stroke(path);
 
@@ -209,14 +246,14 @@
 
 	const Mystic = class extends Supertile {
 
-		constructor(keyPoints) {
+		constructor(keyPoints, strict) {
 
 			super(0, keyPoints);
 
 			const { x, y } = Spectre.points[8];
 
-			this.addChild(new Spectre(9), matrixIdentity);
-			this.addChild(new Spectre(10), matrixIdentity.translate(x, y).rotate(30));
+			this.addChild(new Spectre(9, strict), matrixIdentity);
+			this.addChild(new Spectre(10, strict), matrixIdentity.translate(x, y).rotate(30));
 
 		}
 
@@ -266,13 +303,15 @@
 			return this.renderer.canvas;
 		}
 
-		static #createTiles() {
+		static #createTiles(strict) {
 			const keyPoints = [3, 5, 7, 11].map(pointIndex => Spectre.points[pointIndex]);
 			const tiles = [];
 			for (let categoryID = 0; categoryID < 9; categoryID++) {
-				tiles.push(
-					categoryID === 0 ? new Mystic(keyPoints) : new Spectre(categoryID, keyPoints)
-				);
+				if ( categoryID === 0 ) {
+					tiles.push(new Mystic(keyPoints, strict));
+				} else {
+					tiles.push(new Spectre(categoryID, strict, keyPoints));
+				}
 			}
 			return tiles;
 		}
@@ -374,6 +413,7 @@
 		}
 
 		init({
+			strict = false,
 			width,
 			height,
 			lineWidth,
@@ -385,7 +425,7 @@
 			renderer.init({ width, height });
 			renderer.radiusKeyPoint = radiusKeyPoint;
 
-			const tiles = Monotiles.#createTiles();
+			const tiles = Monotiles.#createTiles(strict);
 
 			// 
 			this.renderer = renderer;
