@@ -398,16 +398,16 @@
 			this.#tiles = Monotiles.#substituteTiles(this.#tiles);
 		}
 
-		render(categoryID) {
-			this.#tiles[categoryID].render(this.renderer, this.matrix);
+		render(categoryID, matrix = matrixIdentity) {
+			this.#tiles[categoryID].render(this.renderer, this.matrix.multiply(matrix));
 		}
 
-		renderKeyPoints(categoryID) {
-			this.#tiles[categoryID].renderKeyPoints(this.renderer, this.matrix);
+		renderKeyPoints(categoryID, matrix = matrixIdentity) {
+			this.#tiles[categoryID].renderKeyPoints(this.renderer, this.matrix.multiply(matrix));
 		}
 
-		renderChildKeyPoints(categoryID) {
-			this.#tiles[categoryID].renderChildKeyPoints(this.renderer, this.matrix);
+		renderChildKeyPoints(categoryID, matrix = matrixIdentity) {
+			this.#tiles[categoryID].renderChildKeyPoints(this.renderer, this.matrix.multiply(matrix));
 		}
 
 	};
