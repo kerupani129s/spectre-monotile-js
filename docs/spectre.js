@@ -48,6 +48,7 @@
 			// 
 			this.#canvas = canvas;
 			this.context = context;
+			this.radiusKeyPoint = radiusKeyPoint;
 
 		};
 
@@ -422,8 +423,7 @@
 		} = {}) {
 
 			const renderer = new Renderer();
-			renderer.init({ width, height });
-			renderer.radiusKeyPoint = radiusKeyPoint;
+			renderer.init({ width, height, lineWidth, radiusKeyPoint });
 
 			const tiles = Monotiles.#createTiles(strict);
 
