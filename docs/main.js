@@ -1,5 +1,183 @@
 (async () => {
 
+	const exampleSpectreStrict = async () => {
+
+		// 
+		const monotiles = new Monotiles();
+
+		monotiles.init({
+			strict: true,
+			width: 400,
+			height: 360,
+			matrix: new DOMMatrixReadOnly().scale(80).translate(1, 1.5),
+			lineWidth: 2,
+			radiusKeyPoint: 5,
+		});
+
+		// 
+		monotiles.render(1);
+		monotiles.renderKeyPoints(1);
+
+		// 
+		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
+		const image = new Image();
+		image.src = URL.createObjectURL(blob);
+		await image.decode();
+
+		document.body.appendChild(image);
+
+	};
+
+	const exampleMysticStrict = async () => {
+
+		// 
+		const monotiles = new Monotiles();
+
+		monotiles.init({
+			strict: true,
+			width: 480,
+			height: 560,
+			matrix: new DOMMatrixReadOnly().scale(80).translate(1, 1.5),
+			lineWidth: 2,
+			radiusKeyPoint: 5,
+		});
+
+		// 
+		monotiles.render(0);
+		monotiles.renderKeyPoints(0);
+
+		// 
+		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
+		const image = new Image();
+		image.src = URL.createObjectURL(blob);
+		await image.decode();
+
+		document.body.appendChild(image);
+
+	};
+
+	const exampleClustersStrictA = async () => {
+
+		// 
+		const monotiles = new Monotiles();
+
+		monotiles.init({
+			strict: true,
+			width: 520,
+			height: 500,
+			matrix: new DOMMatrixReadOnly().scale(40).translate(3, 2.5),
+			lineWidth: 2,
+			radiusKeyPoint: 5,
+		});
+
+		// 
+		monotiles.substitute();
+
+		monotiles.render(1);
+		monotiles.renderChildKeyPoints(1);
+
+		// 
+		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
+		const image = new Image();
+		image.src = URL.createObjectURL(blob);
+		await image.decode();
+
+		document.body.appendChild(image);
+
+	};
+
+	const exampleClustersStrictB = async () => {
+
+		// 
+		const monotiles = new Monotiles();
+
+		monotiles.init({
+			strict: true,
+			width: 520,
+			height: 500,
+			matrix: new DOMMatrixReadOnly().scale(40).translate(3, 2.5),
+			lineWidth: 2,
+			radiusKeyPoint: 5,
+		});
+
+		// 
+		monotiles.substitute();
+
+		monotiles.render(1);
+		monotiles.renderKeyPoints(1);
+
+		// 
+		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
+		const image = new Image();
+		image.src = URL.createObjectURL(blob);
+		await image.decode();
+
+		document.body.appendChild(image);
+
+	};
+
+	const exampleSuperClustersStrictA = async () => {
+
+		// 
+		const monotiles = new Monotiles();
+
+		monotiles.init({
+			strict: true,
+			width: 620,
+			height: 760,
+			matrix: new DOMMatrixReadOnly().scale(20).translate(8.5, 12),
+			lineWidth: 2,
+			radiusKeyPoint: 5,
+		});
+
+		// 
+		monotiles.substitute();
+		monotiles.substitute();
+
+		monotiles.render(1);
+		monotiles.renderChildKeyPoints(1);
+
+		// 
+		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
+		const image = new Image();
+		image.src = URL.createObjectURL(blob);
+		await image.decode();
+
+		document.body.appendChild(image);
+
+	};
+
+	const exampleSuperClustersStrictB = async () => {
+
+		// 
+		const monotiles = new Monotiles();
+
+		monotiles.init({
+			strict: true,
+			width: 620,
+			height: 760,
+			matrix: new DOMMatrixReadOnly().scale(20).translate(8.5, 12),
+			lineWidth: 2,
+			radiusKeyPoint: 5,
+		});
+
+		// 
+		monotiles.substitute();
+		monotiles.substitute();
+
+		monotiles.render(1);
+		monotiles.renderKeyPoints(1);
+
+		// 
+		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
+		const image = new Image();
+		image.src = URL.createObjectURL(blob);
+		await image.decode();
+
+		document.body.appendChild(image);
+
+	};
+
 	const exampleSpectre = async () => {
 
 		// 
@@ -171,6 +349,13 @@
 		document.body.appendChild(image);
 
 	};
+
+	await exampleSpectreStrict();
+	await exampleMysticStrict()
+	await exampleClustersStrictA();
+	await exampleClustersStrictB();
+	await exampleSuperClustersStrictA();
+	await exampleSuperClustersStrictB();
 
 	await exampleSpectre();
 	await exampleMystic()

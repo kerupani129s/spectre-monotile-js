@@ -16,6 +16,8 @@
 		context;
 
 		radiusKeyPoint;
+		noFill;
+		noStrokeQuad;
 
 		get canvas() {
 			return this.#canvas;
@@ -34,6 +36,8 @@
 			height = 150,
 			lineWidth = 2,
 			radiusKeyPoint = 5,
+			noFill = false,
+			noStrokeQuad = false,
 		} = {}) {
 
 			const canvas = document.createElement('canvas');
@@ -48,6 +52,9 @@
 			// 
 			this.#canvas = canvas;
 			this.context = context;
+			this.radiusKeyPoint = radiusKeyPoint;
+			this.noFill = noFill;
+			this.noStrokeQuad = noStrokeQuad;
 
 		};
 
@@ -84,24 +91,32 @@
 			}
 
 			// 
+			if ( ! renderer.noStrokeQuad ) {
+				if ( this.#categoryID === 0 ) {
+					renderer.context.strokeStyle = '#0000ff';
+				} else {
+					renderer.context.strokeStyle = '#ff0000';
+				}
+			}
+
 			if ( this.#categoryID === 0 ) {
-				renderer.context.strokeStyle = '#0000ff';
 				renderer.context.fillStyle = '#0000ff';
 			} else {
-				renderer.context.strokeStyle = '#ff0000';
 				renderer.context.fillStyle = '#ff0000';
 			}
 
 			// 
 			const points = this.#keyPoints.map(point => matrix.transformPoint(point));
 
-			const pathQuad = new Path2D();
-			pathQuad.moveTo(points[0].x, points[0].y);
-			for (const { x, y } of points.slice(1)) {
-				pathQuad.lineTo(x, y);
+			if ( ! renderer.noStrokeQuad ) {
+				const pathQuad = new Path2D();
+				pathQuad.moveTo(points[0].x, points[0].y);
+				for (const { x, y } of points.slice(1)) {
+					pathQuad.lineTo(x, y);
+				}
+				pathQuad.closePath();
+				renderer.context.stroke(pathQuad);
 			}
-			pathQuad.closePath();
-			renderer.context.stroke(pathQuad);
 
 			for (const { x, y } of points) {
 				const pathKeyPoint = new Path2D();
@@ -120,7 +135,7 @@
 
 		#children = [];
 
-		constructor(categoryID, keyPoints) {
+		constructor(categoryID, keyPoints = null) {
 			super(categoryID, keyPoints);
 		}
 
@@ -142,11 +157,13 @@
 
 	};
 
-	// TODO: 狭義 Spectre
 	const Spectre = class extends Tile {
 
 		static #points;
+		static #pathStrict;
 		static #path;
+
+		#strict;
 
 		static {
 
@@ -167,6 +184,39 @@
 				{ x: 0.0, y: 1.0 },
 			].filter(point => DOMPointReadOnly.fromPoint(point));
 
+			const pathStrict = new Path2D();
+			pathStrict.moveTo(points[0].x, points[0].y);
+			for (const [i, pointStart] of points.entries()) {
+				const pointEnd = points[i === points.length - 1 ? 0 : i + 1];
+				const vector = {
+					x: pointEnd.x - pointStart.x,
+					y: pointEnd.y - pointStart.y,
+				};
+				const vectorOrthogonal = {
+					x: - vector.y,
+					y: vector.x,
+				};
+				const sign = (i % 2 === 0 ? -1 : 1);
+				// 注意: 線対称なため vectorOrthogonal 方向のみ反転
+				//       一般的には 180 度回転する
+				const controlPoints = [
+					{
+						x: pointStart.x + 1 / 3 * vector.x + sign * 0.5 * vectorOrthogonal.x,
+						y: pointStart.y + 1 / 3 * vector.y + sign * 0.5 * vectorOrthogonal.y,
+					},
+					{
+						x: pointStart.x + (1 - 1 / 3) * vector.x + sign * 0.5 * vectorOrthogonal.x,
+						y: pointStart.y + (1 - 1 / 3) * vector.y + sign * 0.5 * vectorOrthogonal.y,
+					},
+				];
+				pathStrict.bezierCurveTo(
+					controlPoints[0].x, controlPoints[0].y,
+					controlPoints[1].x, controlPoints[1].y,
+					pointEnd.x, pointEnd.y,
+				);
+			}
+			pathStrict.closePath();
+
 			const path = new Path2D();
 			path.moveTo(points[0].x, points[0].y);
 			for (const { x, y } of points.slice(1)) {
@@ -176,6 +226,7 @@
 
 			// 
 			this.#points = points;
+			this.#pathStrict = pathStrict;
 			this.#path = path;
 
 		}
@@ -184,23 +235,28 @@
 			return this.#points;
 		}
 
-		constructor(categoryID, keyPoints) {
+		constructor(categoryID, strict, keyPoints = null) {
 			super(categoryID, keyPoints);
+			this.#strict = strict;
 		}
 
 		render(renderer, matrix) {
 
-			if ( this.categoryID === 9 ) {
-				renderer.context.fillStyle = '#a0ffa0';
-			} else if ( this.categoryID === 10 ) {
-				renderer.context.fillStyle = '#80ffff';
-			} else {
-				renderer.context.fillStyle = '#ffffff';
+			if ( ! renderer.noFill ) {
+				if ( this.categoryID === 9 ) {
+					renderer.context.fillStyle = '#a0ffa0';
+				} else if ( this.categoryID === 10 ) {
+					renderer.context.fillStyle = '#80ffff';
+				} else {
+					renderer.context.fillStyle = '#ffffff';
+				}
 			}
 
 			const path = new Path2D();
-			path.addPath(Spectre.#path, matrix);
-			renderer.context.fill(path);
+			path.addPath((this.#strict ? Spectre.#pathStrict : Spectre.#path), matrix);
+			if ( ! renderer.noFill ) {
+				renderer.context.fill(path);
+			}
 			renderer.context.stroke(path);
 
 		}
@@ -209,14 +265,14 @@
 
 	const Mystic = class extends Supertile {
 
-		constructor(keyPoints) {
+		constructor(keyPoints, strict) {
 
 			super(0, keyPoints);
 
 			const { x, y } = Spectre.points[8];
 
-			this.addChild(new Spectre(9), matrixIdentity);
-			this.addChild(new Spectre(10), matrixIdentity.translate(x, y).rotate(30));
+			this.addChild(new Spectre(9, strict), matrixIdentity);
+			this.addChild(new Spectre(10, strict), matrixIdentity.translate(x, y).rotate(30));
 
 		}
 
@@ -266,13 +322,15 @@
 			return this.renderer.canvas;
 		}
 
-		static #createTiles() {
+		static #createTiles(strict) {
 			const keyPoints = [3, 5, 7, 11].map(pointIndex => Spectre.points[pointIndex]);
 			const tiles = [];
 			for (let categoryID = 0; categoryID < 9; categoryID++) {
-				tiles.push(
-					categoryID === 0 ? new Mystic(keyPoints) : new Spectre(categoryID, keyPoints)
-				);
+				if ( categoryID === 0 ) {
+					tiles.push(new Mystic(keyPoints, strict));
+				} else {
+					tiles.push(new Spectre(categoryID, strict, keyPoints));
+				}
 			}
 			return tiles;
 		}
@@ -374,18 +432,20 @@
 		}
 
 		init({
-			width,
-			height,
-			lineWidth,
-			radiusKeyPoint,
+			strict = false,
+			width = 300,
+			height = 150,
+			lineWidth = 2,
+			radiusKeyPoint = 5,
 			matrix = matrixIdentity.scale(20),
+			noFill = false,
+			noStrokeQuad = false,
 		} = {}) {
 
 			const renderer = new Renderer();
-			renderer.init({ width, height });
-			renderer.radiusKeyPoint = radiusKeyPoint;
+			renderer.init({ width, height, lineWidth, radiusKeyPoint, noFill, noStrokeQuad });
 
-			const tiles = Monotiles.#createTiles();
+			const tiles = Monotiles.#createTiles(strict);
 
 			// 
 			this.renderer = renderer;
