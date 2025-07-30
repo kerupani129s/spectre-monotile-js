@@ -188,30 +188,24 @@
 			pathStrict.moveTo(points[0].x, points[0].y);
 			for (const [i, pointStart] of points.entries()) {
 				const pointEnd = points[i === points.length - 1 ? 0 : i + 1];
-				const vector = {
-					x: pointEnd.x - pointStart.x,
-					y: pointEnd.y - pointStart.y,
-				};
-				const vectorOrthogonal = {
-					x: - vector.y,
-					y: vector.x,
-				};
 				const sign = (i % 2 === 0 ? -1 : 1);
 				// 注意: 線対称なため vectorOrthogonal 方向のみ反転
 				//       一般的には 180 度回転する
 				const controlPoints = [
-					{
-						x: pointStart.x + 1 / 3 * vector.x + sign * 0.5 * vectorOrthogonal.x,
-						y: pointStart.y + 1 / 3 * vector.y + sign * 0.5 * vectorOrthogonal.y,
-					},
-					{
-						x: pointStart.x + (1 - 1 / 3) * vector.x + sign * 0.5 * vectorOrthogonal.x,
-						y: pointStart.y + (1 - 1 / 3) * vector.y + sign * 0.5 * vectorOrthogonal.y,
-					},
-				];
+					{ x: 1 / 3, y: sign * 0.5 },
+					{ x: 1 - 1 / 3, y: sign * 0.5 },
+				].filter(point => DOMPointReadOnly.fromPoint(point));
+				const vector = {
+					x: pointEnd.x - pointStart.x,
+					y: pointEnd.y - pointStart.y,
+				};
+				const matrix = matrixIdentity
+					.translate(pointStart.x, pointStart.y)
+					.rotateFromVector(vector.x, vector.y);
+				const controlPointsTransformed = controlPoints.map(point => matrix.transformPoint(point));
 				pathStrict.bezierCurveTo(
-					controlPoints[0].x, controlPoints[0].y,
-					controlPoints[1].x, controlPoints[1].y,
+					controlPointsTransformed[0].x, controlPointsTransformed[0].y,
+					controlPointsTransformed[1].x, controlPointsTransformed[1].y,
 					pointEnd.x, pointEnd.y,
 				);
 			}
