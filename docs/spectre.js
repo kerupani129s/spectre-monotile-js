@@ -184,34 +184,30 @@
 				{ x: 0.0, y: 1.0 },
 			].filter(point => DOMPointReadOnly.fromPoint(point));
 
+			const controlPoints = [
+				{ x: 1 / 3, y: 0.5 },
+				{ x: 1 - 1 / 3, y: 0.5 },
+			].filter(point => DOMPointReadOnly.fromPoint(point));
+
+			// 変換行列: (0, 0) と (1, 0) を入れ替えるような 180 度回転
+			const matrixReverse = new DOMMatrixReadOnly([-1, 0, 0, -1, 1, 0]);
+
 			const pathStrict = new Path2D();
 			pathStrict.moveTo(points[0].x, points[0].y);
 			for (const [i, pointStart] of points.entries()) {
 				const pointEnd = points[i === points.length - 1 ? 0 : i + 1];
-				const vector = {
-					x: pointEnd.x - pointStart.x,
-					y: pointEnd.y - pointStart.y,
-				};
-				const vectorOrthogonal = {
-					x: - vector.y,
-					y: vector.x,
-				};
-				const sign = (i % 2 === 0 ? -1 : 1);
-				// 注意: 線対称なため vectorOrthogonal 方向のみ反転
-				//       一般的には 180 度回転する
-				const controlPoints = [
-					{
-						x: pointStart.x + 1 / 3 * vector.x + sign * 0.5 * vectorOrthogonal.x,
-						y: pointStart.y + 1 / 3 * vector.y + sign * 0.5 * vectorOrthogonal.y,
-					},
-					{
-						x: pointStart.x + (1 - 1 / 3) * vector.x + sign * 0.5 * vectorOrthogonal.x,
-						y: pointStart.y + (1 - 1 / 3) * vector.y + sign * 0.5 * vectorOrthogonal.y,
-					},
-				];
+				const matrix = matrixIdentity
+					.translate(pointStart.x, pointStart.y)
+					.rotateFromVector(
+						pointEnd.x - pointStart.x,
+						pointEnd.y - pointStart.y,
+					)
+					.multiply(i % 2 === 0 ? matrixReverse : matrixIdentity);
+				const controlPointsTransformed = controlPoints.map(point => matrix.transformPoint(point));
+				const indices = (i % 2 === 0 ? [1, 0] : [0, 1]);
 				pathStrict.bezierCurveTo(
-					controlPoints[0].x, controlPoints[0].y,
-					controlPoints[1].x, controlPoints[1].y,
+					controlPointsTransformed[indices[0]].x, controlPointsTransformed[indices[0]].y,
+					controlPointsTransformed[indices[1]].x, controlPointsTransformed[indices[1]].y,
 					pointEnd.x, pointEnd.y,
 				);
 			}
@@ -284,14 +280,14 @@
 	const Monotiles = class {
 
 		static rulesChildMatrices = [
-			{ sharedKeyPointIndexes: [3, 0], angle: 0 },
-			{ sharedKeyPointIndexes: [0, 3], angle: -120 },
-			{ sharedKeyPointIndexes: [1, 2], angle: -60 },
-			{ sharedKeyPointIndexes: [0, 3], angle: -60 },
-			{ sharedKeyPointIndexes: [1, 3], angle: 0 },
-			{ sharedKeyPointIndexes: [1, 2], angle: 60 },
-			{ sharedKeyPointIndexes: [0, 3], angle: 60 },
-			{ sharedKeyPointIndexes: [1, 3], angle: 120 },
+			{ sharedKeyPointIndices: [3, 0], angle: 0 },
+			{ sharedKeyPointIndices: [0, 3], angle: -120 },
+			{ sharedKeyPointIndices: [1, 2], angle: -60 },
+			{ sharedKeyPointIndices: [0, 3], angle: -60 },
+			{ sharedKeyPointIndices: [1, 3], angle: 0 },
+			{ sharedKeyPointIndices: [1, 2], angle: 60 },
+			{ sharedKeyPointIndices: [0, 3], angle: 60 },
+			{ sharedKeyPointIndices: [1, 3], angle: 120 },
 		];
 
 		static rulesChildCategories = [
@@ -341,12 +337,12 @@
 
 			let point;
 
-			for (const [childIndex, { sharedKeyPointIndexes, angle }] of this.rulesChildMatrices.entries()) {
+			for (const [childIndex, { sharedKeyPointIndices, angle }] of this.rulesChildMatrices.entries()) {
 
 				// 変換行列: 回転
 				const matrixRotation = matrixIdentity.rotate(angle);
 
-				const sharedKeyPoints = sharedKeyPointIndexes.map(i => keyPointsChild[i]);
+				const sharedKeyPoints = sharedKeyPointIndices.map(i => keyPointsChild[i]);
 				const sharedKeyPointsRotated = sharedKeyPoints
 					.map(sharedKeyPoint => matrixRotation.transformPoint(sharedKeyPoint));
 
