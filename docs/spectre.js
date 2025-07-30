@@ -280,14 +280,14 @@
 	const Monotiles = class {
 
 		static rulesChildMatrices = [
-			{ sharedKeyPointIndexes: [3, 0], angle: 0 },
-			{ sharedKeyPointIndexes: [0, 3], angle: -120 },
-			{ sharedKeyPointIndexes: [1, 2], angle: -60 },
-			{ sharedKeyPointIndexes: [0, 3], angle: -60 },
-			{ sharedKeyPointIndexes: [1, 3], angle: 0 },
-			{ sharedKeyPointIndexes: [1, 2], angle: 60 },
-			{ sharedKeyPointIndexes: [0, 3], angle: 60 },
-			{ sharedKeyPointIndexes: [1, 3], angle: 120 },
+			{ sharedKeyPointIndices: [3, 0], angle: 0 },
+			{ sharedKeyPointIndices: [0, 3], angle: -120 },
+			{ sharedKeyPointIndices: [1, 2], angle: -60 },
+			{ sharedKeyPointIndices: [0, 3], angle: -60 },
+			{ sharedKeyPointIndices: [1, 3], angle: 0 },
+			{ sharedKeyPointIndices: [1, 2], angle: 60 },
+			{ sharedKeyPointIndices: [0, 3], angle: 60 },
+			{ sharedKeyPointIndices: [1, 3], angle: 120 },
 		];
 
 		static rulesChildCategories = [
@@ -337,12 +337,12 @@
 
 			let point;
 
-			for (const [childIndex, { sharedKeyPointIndexes, angle }] of this.rulesChildMatrices.entries()) {
+			for (const [childIndex, { sharedKeyPointIndices, angle }] of this.rulesChildMatrices.entries()) {
 
 				// 変換行列: 回転
 				const matrixRotation = matrixIdentity.rotate(angle);
 
-				const sharedKeyPoints = sharedKeyPointIndexes.map(i => keyPointsChild[i]);
+				const sharedKeyPoints = sharedKeyPointIndices.map(i => keyPointsChild[i]);
 				const sharedKeyPointsRotated = sharedKeyPoints
 					.map(sharedKeyPoint => matrixRotation.transformPoint(sharedKeyPoint));
 
