@@ -18,6 +18,7 @@
 		radiusKeyPoint;
 		noFill;
 		noStrokeQuad;
+		noRenderCategoryName;
 
 		get canvas() {
 			return this.#canvas;
@@ -38,6 +39,7 @@
 			radiusKeyPoint = 5,
 			noFill = false,
 			noStrokeQuad = false,
+			noRenderCategoryName = true,
 		} = {}) {
 
 			const canvas = document.createElement('canvas');
@@ -48,6 +50,8 @@
 			context.lineWidth = lineWidth;
 			context.lineCap = 'round';
 			context.lineJoin = 'round';
+			context.textAlign = 'center';
+			context.textBaseline = 'middle';
 
 			// 
 			this.#canvas = canvas;
@@ -55,6 +59,7 @@
 			this.radiusKeyPoint = radiusKeyPoint;
 			this.noFill = noFill;
 			this.noStrokeQuad = noStrokeQuad;
+			this.noRenderCategoryName = noRenderCategoryName;
 
 		};
 
@@ -64,6 +69,8 @@
 	// タイル
 	// 
 	const Tile = class {
+
+		static #categoryNames = ['Γ', 'Δ', 'Θ', 'Λ', 'Ξ', 'Π', 'Σ', 'Φ', 'Ψ', 'Γ₁', 'Γ₂'];
 
 		#categoryID;
 
@@ -76,6 +83,10 @@
 
 		get categoryID() {
 			return this.#categoryID;
+		}
+
+		get categoryName() {
+			return Tile.#categoryNames[this.#categoryID];
 		}
 
 		get keyPoints() {
@@ -123,6 +134,20 @@
 				pathKeyPoint.arc(x, y, renderer.radiusKeyPoint, 0, 2 * Math.PI);
 				renderer.context.fill(pathKeyPoint);
 			}
+
+		}
+
+		renderCategoryName(renderer, matrix) {
+
+			// TODO: Supertile で描画したい場合、大きさと位置を変更
+			// [x, 0, 0, y, 0, 0] [c, s, - s, c, 0, 0] = [x c, y s, - x s, y c, 0, 0]
+			// sqrt((y s) ^ 2 + (y c) ^ 2) = y sqrt(s ^ 2 + c ^ 2) = y
+			const fontSize = Math.sqrt(matrix.b * matrix.b + matrix.d * matrix.d);
+			const { x, y } = matrix.transformPoint(new DOMPointReadOnly(1.15, 1.1));
+
+			renderer.context.fillStyle = '#000000';
+			renderer.context.font = `${fontSize}px serif`;
+			renderer.context.fillText(this.categoryName, x, y);
 
 		}
 
@@ -254,6 +279,10 @@
 				renderer.context.fill(path);
 			}
 			renderer.context.stroke(path);
+
+			if ( ! renderer.noRenderCategoryName ) {
+				this.renderCategoryName(renderer, matrix);
+			}
 
 		}
 
@@ -436,10 +465,15 @@
 			matrix = matrixIdentity.scale(20),
 			noFill = false,
 			noStrokeQuad = false,
+			noRenderCategoryName = true,
 		} = {}) {
 
 			const renderer = new Renderer();
-			renderer.init({ width, height, lineWidth, radiusKeyPoint, noFill, noStrokeQuad });
+			renderer.init({
+				width, height,
+				lineWidth, radiusKeyPoint,
+				noFill, noStrokeQuad, noRenderCategoryName,
+			});
 
 			const tiles = Monotiles.#createTiles(strict);
 
