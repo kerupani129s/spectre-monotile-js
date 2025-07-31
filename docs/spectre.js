@@ -296,18 +296,18 @@
 
 	const Mystic = class extends Supertile {
 
-		static rulesChildMatrices = [
+		static #rulesChildMatrices = [
 			{ pointIndex: 0, angle: 0 },
 			{ pointIndex: 8, angle: 30 },
 		];
 
-		static ruleChildCategories = [9, 10];
+		static #ruleChildCategories = [9, 10];
 
 		constructor(strict, keyPoints = null) {
 
 			super(0, keyPoints);
 
-			const matricesChild = Mystic.rulesChildMatrices.map(({ pointIndex, angle }) => {
+			const matricesChild = Mystic.#rulesChildMatrices.map(({ pointIndex, angle }) => {
 
 				const { x, y } = Spectre.points[pointIndex];
 				const matrix = matrixIdentity.translate(x, y).rotate(angle);
@@ -316,7 +316,7 @@
 
 			});
 
-			for (const [childIndex, categoryIDChild] of Mystic.ruleChildCategories.entries()) {
+			for (const [childIndex, categoryIDChild] of Mystic.#ruleChildCategories.entries()) {
 
 				const tile = new Spectre(categoryIDChild, strict);
 				const matrix = matricesChild[childIndex];
@@ -334,7 +334,7 @@
 	// 
 	const Monotiles = class {
 
-		static rulesChildMatrices = [
+		static #rulesChildMatrices = [
 			{ sharedKeyPointIndices: [3, 0], angle: 0 },
 			{ sharedKeyPointIndices: [0, 3], angle: -120 },
 			{ sharedKeyPointIndices: [1, 2], angle: -60 },
@@ -345,7 +345,7 @@
 			{ sharedKeyPointIndices: [1, 3], angle: 120 },
 		];
 
-		static rulesChildCategories = [
+		static #rulesChildCategories = [
 			[0, 5, 1, -1, 2, 6, 4, 7],
 			[0, 4, 1, 4, 7, 6, 5, 7],
 			[0, 8, 1, 5, 7, 6, 5, 7],
@@ -357,7 +357,7 @@
 			[0, 8, 1, 8, 7, 6, 8, 7],
 		];
 
-		static rulesKeyPoints = [
+		static #rulesKeyPoints = [
 			{ childIndex: 7, keyPointIndex: 2 },
 			{ childIndex: 6, keyPointIndex: 1 },
 			{ childIndex: 4, keyPointIndex: 2 },
@@ -392,7 +392,7 @@
 
 			let point;
 
-			for (const [childIndex, { sharedKeyPointIndices, angle }] of this.rulesChildMatrices.entries()) {
+			for (const [childIndex, { sharedKeyPointIndices, angle }] of this.#rulesChildMatrices.entries()) {
 
 				// 変換行列: 回転
 				const matrixRotation = matrixIdentity.rotate(angle);
@@ -430,7 +430,7 @@
 
 		static #generateKeyPoints(keyPointsChild, matricesChild) {
 
-			return this.rulesKeyPoints.map(({ childIndex, keyPointIndex }) => {
+			return this.#rulesKeyPoints.map(({ childIndex, keyPointIndex }) => {
 
 				const matrixChild = matricesChild[childIndex];
 				const keyPointChild = keyPointsChild[keyPointIndex];
@@ -443,7 +443,7 @@
 
 		static #createSupertile(categoryID, keyPoints, tiles, matricesChild) {
 
-			const ruleChildCategories = this.rulesChildCategories[categoryID];
+			const ruleChildCategories = this.#rulesChildCategories[categoryID];
 
 			// 
 			const supertile = new Supertile(categoryID, keyPoints);
