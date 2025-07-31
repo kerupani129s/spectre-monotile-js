@@ -18,6 +18,7 @@
 		radiusKeyPoint;
 		noFill;
 		noStrokeQuad;
+		noRenderCategoryName;
 
 		get canvas() {
 			return this.#canvas;
@@ -38,6 +39,7 @@
 			radiusKeyPoint = 5,
 			noFill = false,
 			noStrokeQuad = false,
+			noRenderCategoryName = true,
 		} = {}) {
 
 			const canvas = document.createElement('canvas');
@@ -48,6 +50,8 @@
 			context.lineWidth = lineWidth;
 			context.lineCap = 'round';
 			context.lineJoin = 'round';
+			context.textAlign = 'center';
+			context.textBaseline = 'middle';
 
 			// 
 			this.#canvas = canvas;
@@ -55,6 +59,7 @@
 			this.radiusKeyPoint = radiusKeyPoint;
 			this.noFill = noFill;
 			this.noStrokeQuad = noStrokeQuad;
+			this.noRenderCategoryName = noRenderCategoryName;
 
 		};
 
@@ -64,6 +69,8 @@
 	// タイル
 	// 
 	const Tile = class {
+
+		static #categoryNames = ['Γ', 'Δ', 'Θ', 'Λ', 'Ξ', 'Π', 'Σ', 'Φ', 'Ψ', 'Γ₁', 'Γ₂'];
 
 		#categoryID;
 
@@ -76,6 +83,10 @@
 
 		get categoryID() {
 			return this.#categoryID;
+		}
+
+		get categoryName() {
+			return Tile.#categoryNames[this.#categoryID];
 		}
 
 		get keyPoints() {
@@ -126,6 +137,20 @@
 
 		}
 
+		renderCategoryName(renderer, matrix) {
+
+			// TODO: Supertile で描画したい場合、大きさと位置を変更
+			// [x, 0, 0, y, 0, 0] [c, s, - s, c, 0, 0] = [x c, y s, - x s, y c, 0, 0]
+			// sqrt((y s) ^ 2 + (y c) ^ 2) = y sqrt(s ^ 2 + c ^ 2) = y
+			const fontSize = Math.sqrt(matrix.b * matrix.b + matrix.d * matrix.d);
+			const { x, y } = matrix.transformPoint(new DOMPointReadOnly(1.15, 1.1));
+
+			renderer.context.fillStyle = '#000000';
+			renderer.context.font = `${fontSize}px serif`;
+			renderer.context.fillText(this.categoryName, x, y);
+
+		}
+
 		// TODO: getBounds(matrix)
 		// TODO: { minX, minY, maxX, maxY }
 
@@ -158,6 +183,8 @@
 	};
 
 	const Spectre = class extends Tile {
+
+		static #keyPointIndices = [3, 5, 7, 11];
 
 		static #points;
 		static #pathStrict;
@@ -227,6 +254,10 @@
 
 		}
 
+		static get keyPointIndices() {
+			return this.#keyPointIndices;
+		}
+
 		static get points() {
 			return this.#points;
 		}
@@ -255,20 +286,44 @@
 			}
 			renderer.context.stroke(path);
 
+			if ( ! renderer.noRenderCategoryName ) {
+				this.renderCategoryName(renderer, matrix);
+			}
+
 		}
 
 	};
 
 	const Mystic = class extends Supertile {
 
-		constructor(keyPoints, strict) {
+		static #rulesChildMatrix = [
+			{ pointIndex: 0, angle: 0 },
+			{ pointIndex: 8, angle: 30 },
+		];
+
+		static #ruleChildCategory = [9, 10];
+
+		constructor(strict, keyPoints = null) {
 
 			super(0, keyPoints);
 
-			const { x, y } = Spectre.points[8];
+			const matricesChild = Mystic.#rulesChildMatrix.map(({ pointIndex, angle }) => {
 
-			this.addChild(new Spectre(9, strict), matrixIdentity);
-			this.addChild(new Spectre(10, strict), matrixIdentity.translate(x, y).rotate(30));
+				const { x, y } = Spectre.points[pointIndex];
+				const matrix = matrixIdentity.translate(x, y).rotate(angle);
+
+				return matrix;
+
+			});
+
+			for (const [childIndex, categoryIDChild] of Mystic.#ruleChildCategory.entries()) {
+
+				const tile = new Spectre(categoryIDChild, strict);
+				const matrix = matricesChild[childIndex];
+
+				this.addChild(tile, matrix);
+
+			}
 
 		}
 
@@ -279,7 +334,7 @@
 	// 
 	const Monotiles = class {
 
-		static rulesChildMatrices = [
+		static #rulesChildMatrix = [
 			{ sharedKeyPointIndices: [3, 0], angle: 0 },
 			{ sharedKeyPointIndices: [0, 3], angle: -120 },
 			{ sharedKeyPointIndices: [1, 2], angle: -60 },
@@ -290,7 +345,7 @@
 			{ sharedKeyPointIndices: [1, 3], angle: 120 },
 		];
 
-		static rulesChildCategories = [
+		static #rulesChildCategory = [
 			[0, 5, 1, -1, 2, 6, 4, 7],
 			[0, 4, 1, 4, 7, 6, 5, 7],
 			[0, 8, 1, 5, 7, 6, 5, 7],
@@ -302,7 +357,7 @@
 			[0, 8, 1, 8, 7, 6, 8, 7],
 		];
 
-		static rulesKeyPoints = [
+		static #rulesKeyPoint = [
 			{ childIndex: 7, keyPointIndex: 2 },
 			{ childIndex: 6, keyPointIndex: 1 },
 			{ childIndex: 4, keyPointIndex: 2 },
@@ -319,11 +374,11 @@
 		}
 
 		static #createTiles(strict) {
-			const keyPoints = [3, 5, 7, 11].map(pointIndex => Spectre.points[pointIndex]);
+			const keyPoints = Spectre.keyPointIndices.map(i => Spectre.points[i]);
 			const tiles = [];
 			for (let categoryID = 0; categoryID < 9; categoryID++) {
 				if ( categoryID === 0 ) {
-					tiles.push(new Mystic(keyPoints, strict));
+					tiles.push(new Mystic(strict, keyPoints));
 				} else {
 					tiles.push(new Spectre(categoryID, strict, keyPoints));
 				}
@@ -337,7 +392,7 @@
 
 			let point;
 
-			for (const [childIndex, { sharedKeyPointIndices, angle }] of this.rulesChildMatrices.entries()) {
+			for (const [childIndex, { sharedKeyPointIndices, angle }] of this.#rulesChildMatrix.entries()) {
 
 				// 変換行列: 回転
 				const matrixRotation = matrixIdentity.rotate(angle);
@@ -375,7 +430,7 @@
 
 		static #generateKeyPoints(keyPointsChild, matricesChild) {
 
-			return this.rulesKeyPoints.map(({ childIndex, keyPointIndex }) => {
+			return this.#rulesKeyPoint.map(({ childIndex, keyPointIndex }) => {
 
 				const matrixChild = matricesChild[childIndex];
 				const keyPointChild = keyPointsChild[keyPointIndex];
@@ -388,12 +443,12 @@
 
 		static #createSupertile(categoryID, keyPoints, tiles, matricesChild) {
 
-			const ruleChildCategories = this.rulesChildCategories[categoryID];
+			const ruleChildCategory = this.#rulesChildCategory[categoryID];
 
 			// 
 			const supertile = new Supertile(categoryID, keyPoints);
 
-			for (const [childIndex, categoryIDChild] of ruleChildCategories.entries()) {
+			for (const [childIndex, categoryIDChild] of ruleChildCategory.entries()) {
 
 				if ( categoryIDChild < 0 ) {
 					continue
@@ -436,10 +491,15 @@
 			matrix = matrixIdentity.scale(20),
 			noFill = false,
 			noStrokeQuad = false,
+			noRenderCategoryName = true,
 		} = {}) {
 
 			const renderer = new Renderer();
-			renderer.init({ width, height, lineWidth, radiusKeyPoint, noFill, noStrokeQuad });
+			renderer.init({
+				width, height,
+				lineWidth, radiusKeyPoint,
+				noFill, noStrokeQuad, noRenderCategoryName,
+			});
 
 			const tiles = Monotiles.#createTiles(strict);
 
