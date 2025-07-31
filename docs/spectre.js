@@ -290,7 +290,7 @@
 
 	const Mystic = class extends Supertile {
 
-		constructor(keyPoints, strict) {
+		constructor(strict, keyPoints = null) {
 
 			super(0, keyPoints);
 
@@ -352,7 +352,7 @@
 			const tiles = [];
 			for (let categoryID = 0; categoryID < 9; categoryID++) {
 				if ( categoryID === 0 ) {
-					tiles.push(new Mystic(keyPoints, strict));
+					tiles.push(new Mystic(strict, keyPoints));
 				} else {
 					tiles.push(new Spectre(categoryID, strict, keyPoints));
 				}
