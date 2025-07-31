@@ -23,6 +23,7 @@
 		const image = new Image();
 		image.src = URL.createObjectURL(blob);
 		await image.decode();
+		URL.revokeObjectURL(image.src);
 
 		document.body.appendChild(image);
 
@@ -51,6 +52,7 @@
 		const image = new Image();
 		image.src = URL.createObjectURL(blob);
 		await image.decode();
+		URL.revokeObjectURL(image.src);
 
 		document.body.appendChild(image);
 
@@ -81,6 +83,7 @@
 		const image = new Image();
 		image.src = URL.createObjectURL(blob);
 		await image.decode();
+		URL.revokeObjectURL(image.src);
 
 		document.body.appendChild(image);
 
@@ -111,6 +114,7 @@
 		const image = new Image();
 		image.src = URL.createObjectURL(blob);
 		await image.decode();
+		URL.revokeObjectURL(image.src);
 
 		document.body.appendChild(image);
 
@@ -142,6 +146,7 @@
 		const image = new Image();
 		image.src = URL.createObjectURL(blob);
 		await image.decode();
+		URL.revokeObjectURL(image.src);
 
 		document.body.appendChild(image);
 
@@ -173,6 +178,7 @@
 		const image = new Image();
 		image.src = URL.createObjectURL(blob);
 		await image.decode();
+		URL.revokeObjectURL(image.src);
 
 		document.body.appendChild(image);
 
@@ -200,6 +206,7 @@
 		const image = new Image();
 		image.src = URL.createObjectURL(blob);
 		await image.decode();
+		URL.revokeObjectURL(image.src);
 
 		document.body.appendChild(image);
 
@@ -227,6 +234,7 @@
 		const image = new Image();
 		image.src = URL.createObjectURL(blob);
 		await image.decode();
+		URL.revokeObjectURL(image.src);
 
 		document.body.appendChild(image);
 
@@ -256,6 +264,7 @@
 		const image = new Image();
 		image.src = URL.createObjectURL(blob);
 		await image.decode();
+		URL.revokeObjectURL(image.src);
 
 		document.body.appendChild(image);
 
@@ -285,6 +294,7 @@
 		const image = new Image();
 		image.src = URL.createObjectURL(blob);
 		await image.decode();
+		URL.revokeObjectURL(image.src);
 
 		document.body.appendChild(image);
 
@@ -315,6 +325,7 @@
 		const image = new Image();
 		image.src = URL.createObjectURL(blob);
 		await image.decode();
+		URL.revokeObjectURL(image.src);
 
 		document.body.appendChild(image);
 
@@ -345,6 +356,7 @@
 		const image = new Image();
 		image.src = URL.createObjectURL(blob);
 		await image.decode();
+		URL.revokeObjectURL(image.src);
 
 		document.body.appendChild(image);
 
