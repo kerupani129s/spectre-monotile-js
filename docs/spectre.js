@@ -184,6 +184,8 @@
 
 	const Spectre = class extends Tile {
 
+		static #keyPointIndices = [3, 5, 7, 11];
+
 		static #points;
 		static #pathStrict;
 		static #path;
@@ -252,6 +254,10 @@
 
 		}
 
+		static get keyPointIndices() {
+			return this.#keyPointIndices;
+		}
+
 		static get points() {
 			return this.#points;
 		}
@@ -290,14 +296,34 @@
 
 	const Mystic = class extends Supertile {
 
+		static rulesChildMatrices = [
+			{ pointIndex: 0, angle: 0 },
+			{ pointIndex: 8, angle: 30 },
+		];
+
+		static ruleChildCategories = [9, 10];
+
 		constructor(strict, keyPoints = null) {
 
 			super(0, keyPoints);
 
-			const { x, y } = Spectre.points[8];
+			const matricesChild = Mystic.rulesChildMatrices.map(({ pointIndex, angle }) => {
 
-			this.addChild(new Spectre(9, strict), matrixIdentity);
-			this.addChild(new Spectre(10, strict), matrixIdentity.translate(x, y).rotate(30));
+				const { x, y } = Spectre.points[pointIndex];
+				const matrix = matrixIdentity.translate(x, y).rotate(angle);
+
+				return matrix;
+
+			});
+
+			for (const [childIndex, categoryIDChild] of Mystic.ruleChildCategories.entries()) {
+
+				const tile = new Spectre(categoryIDChild, strict);
+				const matrix = matricesChild[childIndex];
+
+				this.addChild(tile, matrix);
+
+			}
 
 		}
 
@@ -348,7 +374,7 @@
 		}
 
 		static #createTiles(strict) {
-			const keyPoints = [3, 5, 7, 11].map(pointIndex => Spectre.points[pointIndex]);
+			const keyPoints = Spectre.keyPointIndices.map(i => Spectre.points[i]);
 			const tiles = [];
 			for (let categoryID = 0; categoryID < 9; categoryID++) {
 				if ( categoryID === 0 ) {
