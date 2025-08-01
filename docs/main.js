@@ -58,7 +58,7 @@
 
 	};
 
-	const exampleClustersStrictA = async () => {
+	const exampleClusterStrictA = async () => {
 
 		// 
 		const monotiles = new Monotiles();
@@ -89,7 +89,7 @@
 
 	};
 
-	const exampleClustersStrictB = async () => {
+	const exampleClusterStrictB = async () => {
 
 		// 
 		const monotiles = new Monotiles();
@@ -120,7 +120,7 @@
 
 	};
 
-	const exampleSuperClustersStrictA = async () => {
+	const exampleSuperClusterStrictA = async () => {
 
 		// 
 		const monotiles = new Monotiles();
@@ -152,7 +152,7 @@
 
 	};
 
-	const exampleSuperClustersStrictB = async () => {
+	const exampleSuperClusterStrictB = async () => {
 
 		// 
 		const monotiles = new Monotiles();
@@ -240,7 +240,7 @@
 
 	};
 
-	const exampleClustersA = async () => {
+	const exampleClusterA = async () => {
 
 		// 
 		const monotiles = new Monotiles();
@@ -270,7 +270,7 @@
 
 	};
 
-	const exampleClustersB = async () => {
+	const exampleClusterB = async () => {
 
 		// 
 		const monotiles = new Monotiles();
@@ -300,7 +300,7 @@
 
 	};
 
-	const exampleSuperClustersA = async () => {
+	const exampleSuperClusterA = async () => {
 
 		// 
 		const monotiles = new Monotiles();
@@ -331,7 +331,7 @@
 
 	};
 
-	const exampleSuperClustersB = async () => {
+	const exampleSuperClusterB = async () => {
 
 		// 
 		const monotiles = new Monotiles();
@@ -364,16 +364,16 @@
 
 	await exampleSpectreStrict();
 	await exampleMysticStrict()
-	await exampleClustersStrictA();
-	await exampleClustersStrictB();
-	await exampleSuperClustersStrictA();
-	await exampleSuperClustersStrictB();
+	await exampleClusterStrictA();
+	await exampleClusterStrictB();
+	await exampleSuperClusterStrictA();
+	await exampleSuperClusterStrictB();
 
 	await exampleSpectre();
 	await exampleMystic()
-	await exampleClustersA();
-	await exampleClustersB();
-	await exampleSuperClustersA();
-	await exampleSuperClustersB();
+	await exampleClusterA();
+	await exampleClusterB();
+	await exampleSuperClusterA();
+	await exampleSuperClusterB();
 
 })();
