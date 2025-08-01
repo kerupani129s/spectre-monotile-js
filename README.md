@@ -1,7 +1,7 @@
 # spectre-monotile-js
 
-[アインシュタインタイル Spectre/Tile(1, 1)](https://kerupani129s.github.io/spectre-monotile-js/)
+[Monotiles: Spectre/Tile(1, 1)](https://kerupani129s.github.io/spectre-monotile-js/)
 
-## ライセンス
+## License
 
 [MIT License](LICENSE)
