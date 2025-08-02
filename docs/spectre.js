@@ -404,6 +404,21 @@
 			{ childIndex: 1, keyPointIndex: 1 },
 		];
 
+		static create(strict) {
+
+			const keyPoints = Spectre.keyPointIndices.map(i => Spectre.points[i]);
+
+			const tiles = new Spectres(keyPoints);
+
+			tiles.set(0, new Mystic(strict, tiles));
+			for (let categoryID = 1; categoryID < Tiles.length; categoryID++) {
+				tiles.set(categoryID, new Spectre(categoryID, strict, tiles));
+			}
+
+			return tiles;
+
+		}
+
 		static #generateChildMatrices(keyPointsChild) {
 
 			const matricesChildBase = [];
@@ -496,19 +511,6 @@
 
 		}
 
-		constructor(strict) {
-
-			const keyPoints = Spectre.keyPointIndices.map(i => Spectre.points[i]);
-
-			super(keyPoints);
-
-			this.set(0, new Mystic(strict, this));
-			for (let categoryID = 1; categoryID < Tiles.length; categoryID++) {
-				this.set(categoryID, new Spectre(categoryID, strict, this));
-			}
-
-		}
-
 	};
 
 	// 
@@ -544,7 +546,7 @@
 				noFill, noStrokeQuad, noRenderCategoryName,
 			});
 
-			const tiles = new Spectres(strict);
+			const tiles = Spectres.create(strict);
 
 			// 
 			this.renderer = renderer;
