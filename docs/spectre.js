@@ -69,6 +69,10 @@
 
 		}
 
+		clear() {
+			this.context.clearRect(0, 0, this.width, this.height);
+		}
+
 		render(tile, matrix = matrixIdentity) {
 			tile.render(this, this.matrix.multiply(matrix));
 		}
