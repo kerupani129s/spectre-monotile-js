@@ -419,18 +419,20 @@
 
 		}
 
-		static #generateChildMatrices(keyPointsChild) {
+		#generateChildMatrices() {
 
 			const matricesChildBase = [];
 
 			let point;
 
-			for (const [childIndex, { sharedKeyPointIndices, angle }] of this.#rulesChildMatrix.entries()) {
+			for (const [childIndex, ruleChildMatrix] of Spectres.#rulesChildMatrix.entries()) {
+
+				const { sharedKeyPointIndices, angle } = ruleChildMatrix;
 
 				// 変換行列: 回転
 				const matrixRotation = matrixIdentity.rotate(angle);
 
-				const sharedKeyPoints = sharedKeyPointIndices.map(i => keyPointsChild[i]);
+				const sharedKeyPoints = sharedKeyPointIndices.map(i => this.keyPoints[i]);
 				const sharedKeyPointsRotated = sharedKeyPoints
 					.map(sharedKeyPoint => matrixRotation.transformPoint(sharedKeyPoint));
 
@@ -461,12 +463,12 @@
 
 		}
 
-		static #generateKeyPoints(keyPointsChild, matricesChild) {
+		#generateKeyPoints(matricesChild) {
 
-			return this.#rulesKeyPoint.map(({ childIndex, keyPointIndex }) => {
+			return Spectres.#rulesKeyPoint.map(({ childIndex, keyPointIndex }) => {
 
 				const matrixChild = matricesChild[childIndex];
-				const keyPointChild = keyPointsChild[keyPointIndex];
+				const keyPointChild = this.keyPoints[keyPointIndex];
 
 				return matrixChild.transformPoint(keyPointChild);
 
@@ -493,11 +495,9 @@
 
 		substitute() {
 
-			const keyPointsChild = this.keyPoints;
+			const matricesChild = this.#generateChildMatrices();
 
-			const matricesChild = Spectres.#generateChildMatrices(keyPointsChild);
-
-			const keyPoints = Spectres.#generateKeyPoints(keyPointsChild, matricesChild);
+			const keyPoints = this.#generateKeyPoints(matricesChild);
 
 			// 
 			const tiles = new Spectres(keyPoints);
