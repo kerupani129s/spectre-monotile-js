@@ -352,9 +352,9 @@
 	};
 
 	// 
-	// モノタイル
+	// タイル張り
 	// 
-	const Monotiles = class {
+	const Spectres = class {
 
 		static #rulesChildMatrix = [
 			{ sharedKeyPointIndices: [3, 0], angle: 0 },
@@ -386,15 +386,7 @@
 			{ childIndex: 1, keyPointIndex: 1 },
 		];
 
-		renderer;
-
-		#tiles;
-
-		get canvas() {
-			return this.renderer.canvas;
-		}
-
-		static #createTiles(strict) {
+		static createTiles(strict) {
 			const keyPoints = Spectre.keyPointIndices.map(i => Spectre.points[i]);
 			const tiles = [];
 			for (let categoryID = 0; categoryID < 9; categoryID++) {
@@ -483,7 +475,7 @@
 
 		}
 
-		static #substituteTiles(tiles) {
+		static substituteTiles(tiles) {
 
 			// tiles[categoryID].keyPoints は共通
 			const keyPointsChild = tiles[0].keyPoints;
@@ -501,6 +493,21 @@
 
 			return supertiles;
 
+		}
+
+	};
+
+	// 
+	// モノタイル
+	// 
+	const Monotiles = class {
+
+		renderer;
+
+		#tiles;
+
+		get canvas() {
+			return this.renderer.canvas;
 		}
 
 		init({
@@ -523,7 +530,7 @@
 				noFill, noStrokeQuad, noRenderCategoryName,
 			});
 
-			const tiles = Monotiles.#createTiles(strict);
+			const tiles = Spectres.createTiles(strict);
 
 			// 
 			this.renderer = renderer;
@@ -532,7 +539,7 @@
 		}
 
 		substitute() {
-			this.#tiles = Monotiles.#substituteTiles(this.#tiles);
+			this.#tiles = Spectres.substituteTiles(this.#tiles);
 		}
 
 		render(categoryID, matrix = matrixIdentity) {
