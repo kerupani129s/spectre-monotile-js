@@ -491,23 +491,25 @@
 
 		}
 
-		static substituteTiles(tiles) {
+		substitute() {
 
-			const keyPointsChild = tiles.keyPoints;
+			const keyPointsChild = this.keyPoints;
 
-			const matricesChild = this.#generateChildMatrices(keyPointsChild);
+			const matricesChild = Spectres.#generateChildMatrices(keyPointsChild);
 
-			const keyPoints = this.#generateKeyPoints(keyPointsChild, matricesChild);
+			const keyPoints = Spectres.#generateKeyPoints(keyPointsChild, matricesChild);
 
-			const supertiles = new Tiles(keyPoints);
+			// 
+			const tiles = new Spectres(keyPoints);
+
 			for (let categoryID = 0; categoryID < Tiles.length; categoryID++) {
-				supertiles.set(
+				tiles.set(
 					categoryID,
-					this.#createSupertile(categoryID, tiles, matricesChild, supertiles)
+					Spectres.#createSupertile(categoryID, this, matricesChild, tiles)
 				);
 			}
 
-			return supertiles;
+			return tiles;
 
 		}
 
@@ -555,7 +557,7 @@
 		}
 
 		substitute() {
-			this.#tiles = Spectres.substituteTiles(this.#tiles);
+			this.#tiles = this.#tiles.substitute();
 		}
 
 		render(categoryID, matrix = matrixIdentity) {
