@@ -372,7 +372,7 @@
 	// 
 	// タイル張り
 	// 
-	const Spectres = class {
+	const Spectres = class extends Tiles {
 
 		static #rulesChildMatrix = [
 			{ sharedKeyPointIndices: [3, 0], angle: 0 },
@@ -403,19 +403,6 @@
 			{ childIndex: 4, keyPointIndex: 2 },
 			{ childIndex: 1, keyPointIndex: 1 },
 		];
-
-		static #createTile(categoryID, strict, tiles) {
-			return (categoryID === 0 ? new Mystic(strict, tiles) : new Spectre(categoryID, strict, tiles));
-		}
-
-		static createTiles(strict) {
-			const keyPoints = Spectre.keyPointIndices.map(i => Spectre.points[i]);
-			const tiles = new Tiles(keyPoints);
-			for (let categoryID = 0; categoryID < Tiles.length; categoryID++) {
-				tiles.set(categoryID, this.#createTile(categoryID, strict, tiles));
-			}
-			return tiles;
-		}
 
 		static #generateChildMatrices(keyPointsChild) {
 
@@ -509,6 +496,19 @@
 
 		}
 
+		constructor(strict) {
+
+			const keyPoints = Spectre.keyPointIndices.map(i => Spectre.points[i]);
+
+			super(keyPoints);
+
+			this.set(0, new Mystic(strict, this));
+			for (let categoryID = 1; categoryID < Tiles.length; categoryID++) {
+				this.set(categoryID, new Spectre(categoryID, strict, this));
+			}
+
+		}
+
 	};
 
 	// 
@@ -544,7 +544,7 @@
 				noFill, noStrokeQuad, noRenderCategoryName,
 			});
 
-			const tiles = Spectres.createTiles(strict);
+			const tiles = new Spectres(strict);
 
 			// 
 			this.renderer = renderer;
