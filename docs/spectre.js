@@ -336,37 +336,35 @@
 
 	};
 
-	const Mystic = class extends Supertile {
+	const Mystic = class extends Tile {
 
-		static #rulesChildMatrix = [
-			{ pointIndex: 0, angle: 0 },
-			{ pointIndex: 8, angle: 30 },
+		static #rulesChild = [
+			{ categoryID: 9, pointIndex: 0, angle: 0 },
+			{ categoryID: 10, pointIndex: 8, angle: 30 },
 		];
 
-		static #ruleChildCategory = [9, 10];
+		#children;
 
 		constructor(strict, tiles = null) {
 
 			super(0, tiles);
 
-			const matricesChild = Mystic.#rulesChildMatrix.map(({ pointIndex, angle }) => {
+			this.#children = Mystic.#rulesChild.map(child => {
 
-				const { x, y } = Spectre.points[pointIndex];
-				const matrix = matrixIdentity.translate(x, y).rotate(angle);
+				const tile = new Spectre(child.categoryID, strict);
+				const { x, y } = Spectre.points[child.pointIndex];
+				const matrix = matrixIdentity.translate(x, y).rotate(child.angle);
 
-				return matrix;
+				return { tile, matrix };
 
 			});
 
-			for (const [childIndex, categoryIDChild] of Mystic.#ruleChildCategory.entries()) {
+		}
 
-				const tile = new Spectre(categoryIDChild, strict);
-				const matrix = matricesChild[childIndex];
-
-				this.addChild(tile, matrix);
-
+		render(renderer, matrix) {
+			for (const child of this.#children) {
+				child.tile.render(renderer, matrix.multiply(child.matrix));
 			}
-
 		}
 
 	};
