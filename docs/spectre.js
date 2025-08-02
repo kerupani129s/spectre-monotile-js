@@ -95,12 +95,11 @@
 		static #categoryNames = ['Γ', 'Δ', 'Θ', 'Λ', 'Ξ', 'Π', 'Σ', 'Φ', 'Ψ', 'Γ₁', 'Γ₂'];
 
 		#categoryID;
+		#tiles;
 
-		#keyPoints;
-
-		constructor(categoryID, keyPoints = null) {
+		constructor(categoryID, tiles = null) {
 			this.#categoryID = categoryID;
-			this.#keyPoints = keyPoints;
+			this.#tiles = tiles;
 		}
 
 		get categoryID() {
@@ -111,19 +110,10 @@
 			return Tile.#categoryNames[this.#categoryID];
 		}
 
-		get keyPoints() {
-			return this.#keyPoints;
-		}
-
 		render(renderer, matrix) {}
 
 		renderKeyPoints(renderer, matrix) {
 
-			if ( ! this.#keyPoints ) {
-				return;
-			}
-
-			// 
 			if ( ! renderer.noStrokeQuad ) {
 				if ( this.#categoryID === 0 ) {
 					renderer.context.strokeStyle = '#0000ff';
@@ -139,7 +129,7 @@
 			}
 
 			// 
-			const points = this.#keyPoints.map(point => matrix.transformPoint(point));
+			const points = this.#tiles.keyPoints.map(point => matrix.transformPoint(point));
 
 			if ( ! renderer.noStrokeQuad ) {
 				const pathQuad = new Path2D();
@@ -184,8 +174,18 @@
 
 		#array = Array(Tiles.#length);
 
+		#keyPoints;
+
 		static get length() {
 			return this.#length;
+		}
+
+		get keyPoints() {
+			return this.#keyPoints;
+		}
+
+		constructor(keyPoints) {
+			this.#keyPoints = keyPoints;
 		}
 
 		set(categoryID, tile) {
@@ -202,8 +202,8 @@
 
 		#children = [];
 
-		constructor(categoryID, keyPoints = null) {
-			super(categoryID, keyPoints);
+		constructor(categoryID, tiles = null) {
+			super(categoryID, tiles);
 		}
 
 		addChild(tile, matrix) {
@@ -304,8 +304,8 @@
 			return this.#points;
 		}
 
-		constructor(categoryID, strict, keyPoints = null) {
-			super(categoryID, keyPoints);
+		constructor(categoryID, strict, tiles = null) {
+			super(categoryID, tiles);
 			this.#strict = strict;
 		}
 
@@ -345,9 +345,9 @@
 
 		static #ruleChildCategory = [9, 10];
 
-		constructor(strict, keyPoints = null) {
+		constructor(strict, tiles = null) {
 
-			super(0, keyPoints);
+			super(0, tiles);
 
 			const matricesChild = Mystic.#rulesChildMatrix.map(({ pointIndex, angle }) => {
 
@@ -406,19 +406,15 @@
 			{ childIndex: 1, keyPointIndex: 1 },
 		];
 
-		static #createTile(categoryID, strict, keyPoints) {
-			return (categoryID === 0 ? (
-				new Mystic(strict, keyPoints)
-			) : (
-				new Spectre(categoryID, strict, keyPoints)
-			));
+		static #createTile(categoryID, strict, tiles) {
+			return (categoryID === 0 ? new Mystic(strict, tiles) : new Spectre(categoryID, strict, tiles));
 		}
 
 		static createTiles(strict) {
 			const keyPoints = Spectre.keyPointIndices.map(i => Spectre.points[i]);
-			const tiles = new Tiles();
+			const tiles = new Tiles(keyPoints);
 			for (let categoryID = 0; categoryID < Tiles.length; categoryID++) {
-				tiles.set(categoryID, this.#createTile(categoryID, strict, keyPoints));
+				tiles.set(categoryID, this.#createTile(categoryID, strict, tiles));
 			}
 			return tiles;
 		}
@@ -478,12 +474,12 @@
 
 		}
 
-		static #createSupertile(categoryID, keyPoints, tiles, matricesChild) {
+		static #createSupertile(categoryID, tiles, matricesChild, supertiles) {
 
 			const ruleChildCategory = this.#rulesChildCategory[categoryID];
 
 			// 
-			const supertile = new Supertile(categoryID, keyPoints);
+			const supertile = new Supertile(categoryID, supertiles);
 
 			for (const [childIndex, categoryIDChild] of ruleChildCategory.entries()) {
 				if ( categoryIDChild >= 0 ) {
@@ -497,18 +493,17 @@
 
 		static substituteTiles(tiles) {
 
-			// tiles[categoryID].keyPoints は共通
-			const keyPointsChild = tiles.get(0).keyPoints;
+			const keyPointsChild = tiles.keyPoints;
 
 			const matricesChild = this.#generateChildMatrices(keyPointsChild);
 
 			const keyPoints = this.#generateKeyPoints(keyPointsChild, matricesChild);
 
-			const supertiles = new Tiles();
+			const supertiles = new Tiles(keyPoints);
 			for (let categoryID = 0; categoryID < Tiles.length; categoryID++) {
 				supertiles.set(
 					categoryID,
-					this.#createSupertile(categoryID, keyPoints, tiles, matricesChild)
+					this.#createSupertile(categoryID, tiles, matricesChild, supertiles)
 				);
 			}
 
