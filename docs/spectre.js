@@ -474,16 +474,16 @@
 
 		}
 
-		static #createSupertile(categoryID, tiles, matricesChild, supertiles) {
+		#createSupertile(categoryID, matricesChild, tiles) {
 
-			const ruleChildCategory = this.#rulesChildCategory[categoryID];
+			const ruleChildCategory = Spectres.#rulesChildCategory[categoryID];
 
 			// 
-			const supertile = new Supertile(categoryID, supertiles);
+			const supertile = new Supertile(categoryID, tiles);
 
 			for (const [childIndex, categoryIDChild] of ruleChildCategory.entries()) {
 				if ( categoryIDChild >= 0 ) {
-					supertile.addChild(tiles.get(categoryIDChild), matricesChild[childIndex]);
+					supertile.addChild(this.get(categoryIDChild), matricesChild[childIndex]);
 				}
 			}
 
@@ -505,7 +505,7 @@
 			for (let categoryID = 0; categoryID < Tiles.length; categoryID++) {
 				tiles.set(
 					categoryID,
-					Spectres.#createSupertile(categoryID, this, matricesChild, tiles)
+					this.#createSupertile(categoryID, matricesChild, tiles)
 				);
 			}
 
