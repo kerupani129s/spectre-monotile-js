@@ -15,6 +15,8 @@
 		#canvas;
 		context;
 
+		matrix;
+
 		radiusKeyPoint;
 		noFill;
 		noStrokeQuad;
@@ -35,6 +37,7 @@
 		init({
 			width = 300,
 			height = 150,
+			matrix = matrixIdentity.scale(20),
 			lineWidth = 2,
 			radiusKeyPoint = 5,
 			noFill = false,
@@ -56,12 +59,31 @@
 			// 
 			this.#canvas = canvas;
 			this.context = context;
+
+			this.matrix = matrix;
+
 			this.radiusKeyPoint = radiusKeyPoint;
 			this.noFill = noFill;
 			this.noStrokeQuad = noStrokeQuad;
 			this.noRenderCategoryName = noRenderCategoryName;
 
-		};
+		}
+
+		clear() {
+			this.context.clearRect(0, 0, this.width, this.height);
+		}
+
+		render(tile, matrix = matrixIdentity) {
+			tile.render(this, this.matrix.multiply(matrix));
+		}
+
+		renderKeyPoints(tile, matrix = matrixIdentity) {
+			tile.renderKeyPoints(this, this.matrix.multiply(matrix));
+		}
+
+		renderChildKeyPoints(tile, matrix = matrixIdentity) {
+			tile.renderChildKeyPoints(this, this.matrix.multiply(matrix));
+		}
 
 	};
 
@@ -73,12 +95,11 @@
 		static #categoryNames = ['Γ', 'Δ', 'Θ', 'Λ', 'Ξ', 'Π', 'Σ', 'Φ', 'Ψ', 'Γ₁', 'Γ₂'];
 
 		#categoryID;
+		#tiles;
 
-		#keyPoints;
-
-		constructor(categoryID, keyPoints = null) {
+		constructor(categoryID, tiles = null) {
 			this.#categoryID = categoryID;
-			this.#keyPoints = keyPoints;
+			this.#tiles = tiles;
 		}
 
 		get categoryID() {
@@ -89,19 +110,10 @@
 			return Tile.#categoryNames[this.#categoryID];
 		}
 
-		get keyPoints() {
-			return this.#keyPoints;
-		}
-
 		render(renderer, matrix) {}
 
 		renderKeyPoints(renderer, matrix) {
 
-			if ( ! this.#keyPoints ) {
-				return;
-			}
-
-			// 
 			if ( ! renderer.noStrokeQuad ) {
 				if ( this.#categoryID === 0 ) {
 					renderer.context.strokeStyle = '#0000ff';
@@ -117,7 +129,7 @@
 			}
 
 			// 
-			const points = this.#keyPoints.map(point => matrix.transformPoint(point));
+			const points = this.#tiles.keyPoints.map(point => matrix.transformPoint(point));
 
 			if ( ! renderer.noStrokeQuad ) {
 				const pathQuad = new Path2D();
@@ -156,12 +168,42 @@
 
 	};
 
+	const Tiles = class {
+
+		static #length = 9;
+
+		#array = Array(Tiles.#length);
+
+		#keyPoints;
+
+		static get length() {
+			return this.#length;
+		}
+
+		get keyPoints() {
+			return this.#keyPoints;
+		}
+
+		constructor(keyPoints) {
+			this.#keyPoints = keyPoints;
+		}
+
+		set(categoryID, tile) {
+			this.#array[categoryID] = tile;
+		}
+
+		get(categoryID) {
+			return this.#array[categoryID];
+		}
+
+	};
+
 	const Supertile = class extends Tile {
 
 		#children = [];
 
-		constructor(categoryID, keyPoints = null) {
-			super(categoryID, keyPoints);
+		constructor(categoryID, tiles = null) {
+			super(categoryID, tiles);
 		}
 
 		addChild(tile, matrix) {
@@ -262,8 +304,8 @@
 			return this.#points;
 		}
 
-		constructor(categoryID, strict, keyPoints = null) {
-			super(categoryID, keyPoints);
+		constructor(categoryID, strict, tiles = null) {
+			super(categoryID, tiles);
 			this.#strict = strict;
 		}
 
@@ -294,45 +336,43 @@
 
 	};
 
-	const Mystic = class extends Supertile {
+	const Mystic = class extends Tile {
 
-		static #rulesChildMatrix = [
-			{ pointIndex: 0, angle: 0 },
-			{ pointIndex: 8, angle: 30 },
+		static #rulesChild = [
+			{ categoryID: 9, pointIndex: 0, angle: 0 },
+			{ categoryID: 10, pointIndex: 8, angle: 30 },
 		];
 
-		static #ruleChildCategory = [9, 10];
+		#children;
 
-		constructor(strict, keyPoints = null) {
+		constructor(strict, tiles = null) {
 
-			super(0, keyPoints);
+			super(0, tiles);
 
-			const matricesChild = Mystic.#rulesChildMatrix.map(({ pointIndex, angle }) => {
+			this.#children = Mystic.#rulesChild.map(child => {
 
-				const { x, y } = Spectre.points[pointIndex];
-				const matrix = matrixIdentity.translate(x, y).rotate(angle);
+				const tile = new Spectre(child.categoryID, strict);
+				const { x, y } = Spectre.points[child.pointIndex];
+				const matrix = matrixIdentity.translate(x, y).rotate(child.angle);
 
-				return matrix;
+				return { tile, matrix };
 
 			});
 
-			for (const [childIndex, categoryIDChild] of Mystic.#ruleChildCategory.entries()) {
+		}
 
-				const tile = new Spectre(categoryIDChild, strict);
-				const matrix = matricesChild[childIndex];
-
-				this.addChild(tile, matrix);
-
+		render(renderer, matrix) {
+			for (const child of this.#children) {
+				child.tile.render(renderer, matrix.multiply(child.matrix));
 			}
-
 		}
 
 	};
 
 	// 
-	// モノタイル
+	// タイル張り
 	// 
-	const Monotiles = class {
+	const Spectres = class extends Tiles {
 
 		static #rulesChildMatrix = [
 			{ sharedKeyPointIndices: [3, 0], angle: 0 },
@@ -364,40 +404,35 @@
 			{ childIndex: 1, keyPointIndex: 1 },
 		];
 
-		renderer;
+		static create(strict) {
 
-		#tiles;
-		matrix;
-
-		get canvas() {
-			return this.renderer.canvas;
-		}
-
-		static #createTiles(strict) {
 			const keyPoints = Spectre.keyPointIndices.map(i => Spectre.points[i]);
-			const tiles = [];
-			for (let categoryID = 0; categoryID < 9; categoryID++) {
-				if ( categoryID === 0 ) {
-					tiles.push(new Mystic(strict, keyPoints));
-				} else {
-					tiles.push(new Spectre(categoryID, strict, keyPoints));
-				}
+
+			const tiles = new Spectres(keyPoints);
+
+			tiles.set(0, new Mystic(strict, tiles));
+			for (let categoryID = 1; categoryID < Tiles.length; categoryID++) {
+				tiles.set(categoryID, new Spectre(categoryID, strict, tiles));
 			}
+
 			return tiles;
+
 		}
 
-		static #generateChildMatrices(keyPointsChild) {
+		#generateChildMatrices() {
 
 			const matricesChildBase = [];
 
 			let point;
 
-			for (const [childIndex, { sharedKeyPointIndices, angle }] of this.#rulesChildMatrix.entries()) {
+			for (const [childIndex, ruleChildMatrix] of Spectres.#rulesChildMatrix.entries()) {
+
+				const { sharedKeyPointIndices, angle } = ruleChildMatrix;
 
 				// 変換行列: 回転
 				const matrixRotation = matrixIdentity.rotate(angle);
 
-				const sharedKeyPoints = sharedKeyPointIndices.map(i => keyPointsChild[i]);
+				const sharedKeyPoints = sharedKeyPointIndices.map(i => this.keyPoints[i]);
 				const sharedKeyPointsRotated = sharedKeyPoints
 					.map(sharedKeyPoint => matrixRotation.transformPoint(sharedKeyPoint));
 
@@ -428,12 +463,12 @@
 
 		}
 
-		static #generateKeyPoints(keyPointsChild, matricesChild) {
+		#generateKeyPoints(matricesChild) {
 
-			return this.#rulesKeyPoint.map(({ childIndex, keyPointIndex }) => {
+			return Spectres.#rulesKeyPoint.map(({ childIndex, keyPointIndex }) => {
 
 				const matrixChild = matricesChild[childIndex];
-				const keyPointChild = keyPointsChild[keyPointIndex];
+				const keyPointChild = this.keyPoints[keyPointIndex];
 
 				return matrixChild.transformPoint(keyPointChild);
 
@@ -441,54 +476,65 @@
 
 		}
 
-		static #createSupertile(categoryID, keyPoints, tiles, matricesChild) {
+		#createSupertile(categoryID, matricesChild, tiles) {
 
-			const ruleChildCategory = this.#rulesChildCategory[categoryID];
+			const ruleChildCategory = Spectres.#rulesChildCategory[categoryID];
 
 			// 
-			const supertile = new Supertile(categoryID, keyPoints);
+			const supertile = new Supertile(categoryID, tiles);
 
 			for (const [childIndex, categoryIDChild] of ruleChildCategory.entries()) {
-
-				if ( categoryIDChild < 0 ) {
-					continue
+				if ( categoryIDChild >= 0 ) {
+					supertile.addChild(this.get(categoryIDChild), matricesChild[childIndex]);
 				}
-
-				supertile.addChild(tiles[categoryIDChild], matricesChild[childIndex]);
-
 			}
 
 			return supertile;
 
 		}
 
-		static #substituteTiles(tiles) {
+		substitute() {
 
-			// tiles[categoryID].keyPoints は共通
-			const keyPointsChild = tiles[0].keyPoints;
+			const matricesChild = this.#generateChildMatrices();
 
-			const matricesChild = this.#generateChildMatrices(keyPointsChild);
+			const keyPoints = this.#generateKeyPoints(matricesChild);
 
-			const keyPoints = this.#generateKeyPoints(keyPointsChild, matricesChild);
+			// 
+			const tiles = new Spectres(keyPoints);
 
-			const supertiles = [];
-			for (let categoryID = 0; categoryID < 9; categoryID++) {
-				supertiles.push(
-					this.#createSupertile(categoryID, keyPoints, tiles, matricesChild)
+			for (let categoryID = 0; categoryID < Tiles.length; categoryID++) {
+				tiles.set(
+					categoryID,
+					this.#createSupertile(categoryID, matricesChild, tiles)
 				);
 			}
 
-			return supertiles;
+			return tiles;
 
+		}
+
+	};
+
+	// 
+	// モノタイル
+	// 
+	const Monotiles = class {
+
+		renderer;
+
+		#tiles;
+
+		get canvas() {
+			return this.renderer.canvas;
 		}
 
 		init({
 			strict = false,
 			width = 300,
 			height = 150,
+			matrix = matrixIdentity.scale(20),
 			lineWidth = 2,
 			radiusKeyPoint = 5,
-			matrix = matrixIdentity.scale(20),
 			noFill = false,
 			noStrokeQuad = false,
 			noRenderCategoryName = true,
@@ -497,33 +543,33 @@
 			const renderer = new Renderer();
 			renderer.init({
 				width, height,
+				matrix,
 				lineWidth, radiusKeyPoint,
 				noFill, noStrokeQuad, noRenderCategoryName,
 			});
 
-			const tiles = Monotiles.#createTiles(strict);
+			const tiles = Spectres.create(strict);
 
 			// 
 			this.renderer = renderer;
 			this.#tiles = tiles;
-			this.matrix = matrix;
 
 		}
 
 		substitute() {
-			this.#tiles = Monotiles.#substituteTiles(this.#tiles);
+			this.#tiles = this.#tiles.substitute();
 		}
 
 		render(categoryID, matrix = matrixIdentity) {
-			this.#tiles[categoryID].render(this.renderer, this.matrix.multiply(matrix));
+			this.renderer.render(this.#tiles.get(categoryID), matrix);
 		}
 
 		renderKeyPoints(categoryID, matrix = matrixIdentity) {
-			this.#tiles[categoryID].renderKeyPoints(this.renderer, this.matrix.multiply(matrix));
+			this.renderer.renderKeyPoints(this.#tiles.get(categoryID), matrix);
 		}
 
 		renderChildKeyPoints(categoryID, matrix = matrixIdentity) {
-			this.#tiles[categoryID].renderChildKeyPoints(this.renderer, this.matrix.multiply(matrix));
+			this.renderer.renderChildKeyPoints(this.#tiles.get(categoryID), matrix);
 		}
 
 	};
