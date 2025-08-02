@@ -15,6 +15,8 @@
 		#canvas;
 		context;
 
+		matrix;
+
 		radiusKeyPoint;
 		noFill;
 		noStrokeQuad;
@@ -35,6 +37,7 @@
 		init({
 			width = 300,
 			height = 150,
+			matrix = matrixIdentity.scale(20),
 			lineWidth = 2,
 			radiusKeyPoint = 5,
 			noFill = false,
@@ -56,12 +59,27 @@
 			// 
 			this.#canvas = canvas;
 			this.context = context;
+
+			this.matrix = matrix;
+
 			this.radiusKeyPoint = radiusKeyPoint;
 			this.noFill = noFill;
 			this.noStrokeQuad = noStrokeQuad;
 			this.noRenderCategoryName = noRenderCategoryName;
 
-		};
+		}
+
+		render(tile, matrix = matrixIdentity) {
+			tile.render(this, this.matrix.multiply(matrix));
+		}
+
+		renderKeyPoints(tile, matrix = matrixIdentity) {
+			tile.renderKeyPoints(this, this.matrix.multiply(matrix));
+		}
+
+		renderChildKeyPoints(tile, matrix = matrixIdentity) {
+			tile.renderChildKeyPoints(this, this.matrix.multiply(matrix));
+		}
 
 	};
 
@@ -367,7 +385,6 @@
 		renderer;
 
 		#tiles;
-		matrix;
 
 		get canvas() {
 			return this.renderer.canvas;
@@ -486,9 +503,9 @@
 			strict = false,
 			width = 300,
 			height = 150,
+			matrix = matrixIdentity.scale(20),
 			lineWidth = 2,
 			radiusKeyPoint = 5,
-			matrix = matrixIdentity.scale(20),
 			noFill = false,
 			noStrokeQuad = false,
 			noRenderCategoryName = true,
@@ -497,6 +514,7 @@
 			const renderer = new Renderer();
 			renderer.init({
 				width, height,
+				matrix,
 				lineWidth, radiusKeyPoint,
 				noFill, noStrokeQuad, noRenderCategoryName,
 			});
@@ -506,7 +524,6 @@
 			// 
 			this.renderer = renderer;
 			this.#tiles = tiles;
-			this.matrix = matrix;
 
 		}
 
@@ -515,15 +532,15 @@
 		}
 
 		render(categoryID, matrix = matrixIdentity) {
-			this.#tiles[categoryID].render(this.renderer, this.matrix.multiply(matrix));
+			this.renderer.render(this.#tiles[categoryID], matrix);
 		}
 
 		renderKeyPoints(categoryID, matrix = matrixIdentity) {
-			this.#tiles[categoryID].renderKeyPoints(this.renderer, this.matrix.multiply(matrix));
+			this.renderer.renderKeyPoints(this.#tiles[categoryID], matrix);
 		}
 
 		renderChildKeyPoints(categoryID, matrix = matrixIdentity) {
-			this.#tiles[categoryID].renderChildKeyPoints(this.renderer, this.matrix.multiply(matrix));
+			this.renderer.renderChildKeyPoints(this.#tiles[categoryID], matrix);
 		}
 
 	};
