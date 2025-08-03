@@ -29,3 +29,41 @@ renderKeyPoints(categoryID, matrix = new DOMMatrixReadOnly())
 
 renderChildKeyPoints(categoryID, matrix = new DOMMatrixReadOnly())
 ```
+
+## Renderer class
+
+```javascript
+context
+
+matrix
+
+radiusKeyPoint
+noFill
+noStrokeQuad
+noRenderCategoryName
+
+get canvas()
+
+get width()
+
+get height()
+
+init({
+	width = 300,
+	height = 150,
+	matrix = new DOMMatrixReadOnly().scale(20),
+	lineWidth = 2,
+	radiusKeyPoint = 5,
+	noFill = false,
+	noStrokeQuad = false,
+	noRenderCategoryName = true,
+} = {})
+
+clear()
+
+render(tile, matrix = new DOMMatrixReadOnly())
+
+renderKeyPoints(tile, matrix = new DOMMatrixReadOnly())
+
+renderChildKeyPoints(tile, matrix = new DOMMatrixReadOnly())
+```
