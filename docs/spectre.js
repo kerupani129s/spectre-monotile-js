@@ -338,7 +338,7 @@
 			return this.#points;
 		}
 
-		constructor(categoryID, strict, tiles = null) {
+		constructor(categoryID, strict = false, tiles = null) {
 			super(categoryID, tiles);
 			this.#strict = strict;
 		}
@@ -379,7 +379,7 @@
 
 		#children;
 
-		constructor(strict, tiles = null) {
+		constructor(strict = false, tiles = null) {
 
 			super(0, tiles);
 
@@ -438,7 +438,7 @@
 			{ childIndex: 1, keyPointIndex: 1 },
 		];
 
-		static create(strict) {
+		static create(strict = false) {
 
 			const keyPoints = Spectre.keyPointIndices.map(i => Spectre.points[i]);
 
@@ -549,65 +549,11 @@
 
 	};
 
-	// 
-	// モノタイル
-	// 
-	const Monotiles = class {
-
-		renderer;
-
-		#tiles;
-
-		get canvas() {
-			return this.renderer.canvas;
-		}
-
-		init({
-			strict = false,
-			width = 300,
-			height = 150,
-			matrix = Matrix.IDENTITY.scale(20),
-			lineWidth = 2,
-			radiusKeyPoint = 5,
-			noFill = false,
-			noStrokeQuad = false,
-			noRenderCategoryName = true,
-		} = {}) {
-
-			const renderer = new Renderer();
-			renderer.init({
-				width, height,
-				matrix,
-				lineWidth, radiusKeyPoint,
-				noFill, noStrokeQuad, noRenderCategoryName,
-			});
-
-			const tiles = Spectres.create(strict);
-
-			// 
-			this.renderer = renderer;
-			this.#tiles = tiles;
-
-		}
-
-		substitute() {
-			this.#tiles = this.#tiles.substitute();
-		}
-
-		render(categoryID, matrix = Matrix.IDENTITY) {
-			this.renderer.render(this.#tiles.get(categoryID), matrix);
-		}
-
-		renderKeyPoints(categoryID, matrix = Matrix.IDENTITY) {
-			this.renderer.renderKeyPoints(this.#tiles.get(categoryID), matrix);
-		}
-
-		renderChildKeyPoints(categoryID, matrix = Matrix.IDENTITY) {
-			this.renderer.renderChildKeyPoints(this.#tiles.get(categoryID), matrix);
-		}
-
+	window.Monotile = {
+		Matrix,
+		Renderer,
+		Tile, Tiles, Supertile, Spectre, Mystic,
+		Spectres,
 	};
-
-	window.Monotiles = Monotiles;
 
 })();

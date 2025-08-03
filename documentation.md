@@ -2,35 +2,20 @@
 
 [kerupani129s/spectre-monotile-js - GitHub](https://github.com/kerupani129s/spectre-monotile-js)
 
-## Monotiles class
+## Maths
+
+### Matrix class
 
 ```javascript
-renderer
+static get IDENTITY()
+static get FLIPPING()
 
-get canvas()
-
-init({
-	strict = false,
-	width = 300,
-	height = 150,
-	matrix = new DOMMatrixReadOnly().scale(20),
-	lineWidth = 2,
-	radiusKeyPoint = 5,
-	noFill = false,
-	noStrokeQuad = false,
-	noRenderCategoryName = true,
-} = {})
-
-substitute()
-
-render(categoryID, matrix = new DOMMatrixReadOnly())
-
-renderKeyPoints(categoryID, matrix = new DOMMatrixReadOnly())
-
-renderChildKeyPoints(categoryID, matrix = new DOMMatrixReadOnly())
+static decomposeScale(matrix)
 ```
 
-## Renderer class
+## Rendering
+
+### Renderer class
 
 ```javascript
 context
@@ -52,7 +37,7 @@ get height()
 init({
 	width = 300,
 	height = 150,
-	matrix = new DOMMatrixReadOnly().scale(20),
+	matrix = Matrix.IDENTITY.scale(20),
 	lineWidth = 2,
 	radiusKeyPoint = 5,
 	noFill = false,
@@ -62,11 +47,64 @@ init({
 
 clear()
 
-render(tile, matrix = new DOMMatrixReadOnly())
+render(tile, matrix = Matrix.IDENTITY)
 
-renderKeyPoints(tile, matrix = new DOMMatrixReadOnly())
+renderKeyPoints(tile, matrix = Matrix.IDENTITY)
 
-renderChildKeyPoints(tile, matrix = new DOMMatrixReadOnly())
+renderChildKeyPoints(tile, matrix = Matrix.IDENTITY)
 
 async extractImage({ type, quality } = {})
+```
+
+## Tiles
+
+### Tile class
+
+```javascript
+get categoryID()
+get categoryName()
+```
+
+### Tiles class
+
+```javascript
+static get length()
+
+get keyPoints()
+
+get(categoryID)
+```
+
+### Supertile class
+
+Inheritance: `Tile`
+
+### Spectre class
+
+Inheritance: `Tile`
+
+```javascript
+static get points()
+
+constructor(categoryID, strict = false)
+```
+
+### Mystic class
+
+Inheritance: `Tile`
+
+```javascript
+constructor(strict = false)
+```
+
+## Tiling
+
+### Spectres
+
+Inheritance: `Tiles`
+
+```javascript
+static create(strict = false)
+
+substitute()
 ```
