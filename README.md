@@ -37,17 +37,15 @@ monotiles.renderChildKeyPoints(1);
 ```javascript
 renderer
 
-matrix
-
 get canvas()
 
 init({
 	strict = false,
 	width = 300,
 	height = 150,
+	matrix = new DOMMatrixReadOnly().scale(20),
 	lineWidth = 2,
 	radiusKeyPoint = 5,
-	matrix = new DOMMatrixReadOnly().scale(20),
 	noFill = false,
 	noStrokeQuad = false,
 	noRenderCategoryName = true,
