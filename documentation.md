@@ -99,7 +99,7 @@ constructor(strict = false)
 
 ## Tiling
 
-### Spectres
+### Spectres class
 
 Inheritance: `Tiles`
 
