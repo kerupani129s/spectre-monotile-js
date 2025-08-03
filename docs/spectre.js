@@ -87,6 +87,15 @@
 			tile.renderChildKeyPoints(this, this.matrix.multiply(matrix));
 		}
 
+		async extractImage({ type, quality } = {}) {
+			const blob = await new Promise(resolve => this.#canvas.toBlob(resolve, type, quality));
+			const image = new Image();
+			image.src = URL.createObjectURL(blob);
+			await image.decode();
+			URL.revokeObjectURL(image.src);
+			return image;
+		}
+
 	};
 
 	// 

@@ -67,4 +67,6 @@ render(tile, matrix = new DOMMatrixReadOnly())
 renderKeyPoints(tile, matrix = new DOMMatrixReadOnly())
 
 renderChildKeyPoints(tile, matrix = new DOMMatrixReadOnly())
+
+async extractImage({ type, quality } = {})
 ```
