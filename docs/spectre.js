@@ -18,6 +18,7 @@
 		matrix;
 
 		radiusKeyPoint;
+
 		noFill;
 		noStrokeQuad;
 		noRenderCategoryName;
@@ -63,6 +64,7 @@
 			this.matrix = matrix;
 
 			this.radiusKeyPoint = radiusKeyPoint;
+
 			this.noFill = noFill;
 			this.noStrokeQuad = noStrokeQuad;
 			this.noRenderCategoryName = noRenderCategoryName;
