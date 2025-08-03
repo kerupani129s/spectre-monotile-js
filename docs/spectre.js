@@ -1,11 +1,36 @@
 (() => {
 
 	// 
-	// 定数
+	// 行列
 	// 
-	const matrixIdentity = new DOMMatrixReadOnly();
+	const Matrix = class {
 
-	const matrixTransposition = new DOMMatrixReadOnly([0, 1, 1, 0, 0, 0]);
+		static #identity = new DOMMatrixReadOnly();
+		static #flipping = new DOMMatrixReadOnly([0, 1, 1, 0, 0, 0]);
+
+		static get IDENTITY() {
+			return this.#identity;
+		}
+
+		// 反転 reflection/flipping
+		// 転置 transposition
+		static get FLIPPING() {
+			return this.#flipping;
+		}
+
+		static decomposeScale(matrix) {
+
+			// [c, s, - s, c, 0, 0] [x, 0, 0, y, 0, 0] = [c x, s x, - s y, c y, 0, 0]
+			// sqrt((  c x) ^ 2 + (s x) ^ 2) = sqrt(c ^ 2 + s ^ 2) x = x
+			// sqrt((- s y) ^ 2 + (c y) ^ 2) = sqrt(s ^ 2 + c ^ 2) y = y
+			return {
+				x: Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b),
+				y: Math.sqrt(matrix.c * matrix.c + matrix.d * matrix.d),
+			};
+
+		}
+
+	};
 
 	// 
 	// レンダラ
@@ -38,7 +63,7 @@
 		init({
 			width = 300,
 			height = 150,
-			matrix = matrixIdentity.scale(20),
+			matrix = Matrix.IDENTITY.scale(20),
 			lineWidth = 2,
 			radiusKeyPoint = 5,
 			noFill = false,
@@ -75,15 +100,15 @@
 			this.context.clearRect(0, 0, this.width, this.height);
 		}
 
-		render(tile, matrix = matrixIdentity) {
+		render(tile, matrix = Matrix.IDENTITY) {
 			tile.render(this, this.matrix.multiply(matrix));
 		}
 
-		renderKeyPoints(tile, matrix = matrixIdentity) {
+		renderKeyPoints(tile, matrix = Matrix.IDENTITY) {
 			tile.renderKeyPoints(this, this.matrix.multiply(matrix));
 		}
 
-		renderChildKeyPoints(tile, matrix = matrixIdentity) {
+		renderChildKeyPoints(tile, matrix = Matrix.IDENTITY) {
 			tile.renderChildKeyPoints(this, this.matrix.multiply(matrix));
 		}
 
@@ -163,9 +188,7 @@
 		renderCategoryName(renderer, matrix) {
 
 			// TODO: Supertile で描画したい場合、大きさと位置を変更
-			// [x, 0, 0, y, 0, 0] [c, s, - s, c, 0, 0] = [x c, y s, - x s, y c, 0, 0]
-			// sqrt((y s) ^ 2 + (y c) ^ 2) = y sqrt(s ^ 2 + c ^ 2) = y
-			const fontSize = Math.sqrt(matrix.b * matrix.b + matrix.d * matrix.d);
+			const fontSize = Matrix.decomposeScale(matrix).y;
 			const { x, y } = matrix.transformPoint(new DOMPointReadOnly(1.15, 1.1));
 
 			renderer.context.fillStyle = '#000000';
@@ -276,13 +299,13 @@
 			pathStrict.moveTo(points[0].x, points[0].y);
 			for (const [i, pointStart] of points.entries()) {
 				const pointEnd = points[i === points.length - 1 ? 0 : i + 1];
-				const matrix = matrixIdentity
+				const matrix = Matrix.IDENTITY
 					.translate(pointStart.x, pointStart.y)
 					.rotateFromVector(
 						pointEnd.x - pointStart.x,
 						pointEnd.y - pointStart.y,
 					)
-					.multiply(i % 2 === 0 ? matrixReverse : matrixIdentity);
+					.multiply(i % 2 === 0 ? matrixReverse : Matrix.IDENTITY);
 				const controlPointsTransformed = controlPoints.map(point => matrix.transformPoint(point));
 				const indices = (i % 2 === 0 ? [1, 0] : [0, 1]);
 				pathStrict.bezierCurveTo(
@@ -315,7 +338,7 @@
 			return this.#points;
 		}
 
-		constructor(categoryID, strict, tiles = null) {
+		constructor(categoryID, strict = false, tiles = null) {
 			super(categoryID, tiles);
 			this.#strict = strict;
 		}
@@ -356,7 +379,7 @@
 
 		#children;
 
-		constructor(strict, tiles = null) {
+		constructor(strict = false, tiles = null) {
 
 			super(0, tiles);
 
@@ -364,7 +387,7 @@
 
 				const tile = new Spectre(child.categoryID, strict);
 				const { x, y } = Spectre.points[child.pointIndex];
-				const matrix = matrixIdentity.translate(x, y).rotate(child.angle);
+				const matrix = Matrix.IDENTITY.translate(x, y).rotate(child.angle);
 
 				return { tile, matrix };
 
@@ -415,7 +438,7 @@
 			{ childIndex: 1, keyPointIndex: 1 },
 		];
 
-		static create(strict) {
+		static create(strict = false) {
 
 			const keyPoints = Spectre.keyPointIndices.map(i => Spectre.points[i]);
 
@@ -441,7 +464,7 @@
 				const { sharedKeyPointIndices, angle } = ruleChildMatrix;
 
 				// 変換行列: 回転
-				const matrixRotation = matrixIdentity.rotate(angle);
+				const matrixRotation = Matrix.IDENTITY.rotate(angle);
 
 				const sharedKeyPoints = sharedKeyPointIndices.map(i => this.keyPoints[i]);
 				const sharedKeyPointsRotated = sharedKeyPoints
@@ -454,7 +477,7 @@
 				}
 
 				// 変換行列: 移動
-				const matrixTranslation = matrixIdentity.translate(
+				const matrixTranslation = Matrix.IDENTITY.translate(
 					point.x - sharedKeyPointsRotated[0].x,
 					point.y - sharedKeyPointsRotated[0].y,
 				);
@@ -467,8 +490,8 @@
 
 			}
 
-			// 変換行列: 回転, 移動, 転置
-			const matricesChild = matricesChildBase.map(matrix => matrixTransposition.multiply(matrix));
+			// 変換行列: 回転, 移動, 反転
+			const matricesChild = matricesChildBase.map(matrix => Matrix.FLIPPING.multiply(matrix));
 
 			return matricesChild;
 
@@ -526,65 +549,11 @@
 
 	};
 
-	// 
-	// モノタイル
-	// 
-	const Monotiles = class {
-
-		renderer;
-
-		#tiles;
-
-		get canvas() {
-			return this.renderer.canvas;
-		}
-
-		init({
-			strict = false,
-			width = 300,
-			height = 150,
-			matrix = matrixIdentity.scale(20),
-			lineWidth = 2,
-			radiusKeyPoint = 5,
-			noFill = false,
-			noStrokeQuad = false,
-			noRenderCategoryName = true,
-		} = {}) {
-
-			const renderer = new Renderer();
-			renderer.init({
-				width, height,
-				matrix,
-				lineWidth, radiusKeyPoint,
-				noFill, noStrokeQuad, noRenderCategoryName,
-			});
-
-			const tiles = Spectres.create(strict);
-
-			// 
-			this.renderer = renderer;
-			this.#tiles = tiles;
-
-		}
-
-		substitute() {
-			this.#tiles = this.#tiles.substitute();
-		}
-
-		render(categoryID, matrix = matrixIdentity) {
-			this.renderer.render(this.#tiles.get(categoryID), matrix);
-		}
-
-		renderKeyPoints(categoryID, matrix = matrixIdentity) {
-			this.renderer.renderKeyPoints(this.#tiles.get(categoryID), matrix);
-		}
-
-		renderChildKeyPoints(categoryID, matrix = matrixIdentity) {
-			this.renderer.renderChildKeyPoints(this.#tiles.get(categoryID), matrix);
-		}
-
+	window.Monotile = {
+		Matrix,
+		Renderer,
+		Tile, Tiles, Supertile, Spectre, Mystic,
+		Spectres,
 	};
-
-	window.Monotiles = Monotiles;
 
 })();

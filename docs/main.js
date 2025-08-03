@@ -1,25 +1,26 @@
 (async () => {
 
+	const { Matrix, Renderer, Spectres } = Monotile;
+
 	const exampleSpectreStrict = async () => {
 
 		// 
-		const monotiles = new Monotiles();
+		const renderer = new Renderer();
 
-		monotiles.init({
-			strict: true,
+		renderer.init({
 			width: 400,
 			height: 360,
-			matrix: new DOMMatrixReadOnly().scale(80).translate(1, 1.5),
-			lineWidth: 2,
-			radiusKeyPoint: 5,
+			matrix: Matrix.IDENTITY.scale(80).translate(1, 1.5),
 		});
 
 		// 
-		monotiles.render(1);
-		monotiles.renderKeyPoints(1);
+		const tile = Spectres.create(true).get(1);
+
+		renderer.render(tile);
+		renderer.renderKeyPoints(tile);
 
 		// 
-		const image = await monotiles.renderer.extractImage();
+		const image = await renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -28,23 +29,22 @@
 	const exampleMysticStrict = async () => {
 
 		// 
-		const monotiles = new Monotiles();
+		const renderer = new Renderer();
 
-		monotiles.init({
-			strict: true,
+		renderer.init({
 			width: 480,
 			height: 560,
-			matrix: new DOMMatrixReadOnly().scale(80).translate(1, 1.5),
-			lineWidth: 2,
-			radiusKeyPoint: 5,
+			matrix: Matrix.IDENTITY.scale(80).translate(1, 1.5),
 		});
 
 		// 
-		monotiles.render(0);
-		monotiles.renderKeyPoints(0);
+		const tile = Spectres.create(true).get(0);
+
+		renderer.render(tile);
+		renderer.renderKeyPoints(tile);
 
 		// 
-		const image = await monotiles.renderer.extractImage();
+		const image = await renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -53,25 +53,22 @@
 	const exampleClusterStrictA = async () => {
 
 		// 
-		const monotiles = new Monotiles();
+		const renderer = new Renderer();
 
-		monotiles.init({
-			strict: true,
+		renderer.init({
 			width: 520,
 			height: 500,
-			matrix: new DOMMatrixReadOnly().scale(40).translate(3, 2.5),
-			lineWidth: 2,
-			radiusKeyPoint: 5,
+			matrix: Matrix.IDENTITY.scale(40).translate(3, 2.5),
 		});
 
 		// 
-		monotiles.substitute();
+		const tile = Spectres.create(true).substitute().get(1);
 
-		monotiles.render(1);
-		monotiles.renderChildKeyPoints(1);
+		renderer.render(tile);
+		renderer.renderChildKeyPoints(tile);
 
 		// 
-		const image = await monotiles.renderer.extractImage();
+		const image = await renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -80,25 +77,22 @@
 	const exampleClusterStrictB = async () => {
 
 		// 
-		const monotiles = new Monotiles();
+		const renderer = new Renderer();
 
-		monotiles.init({
-			strict: true,
+		renderer.init({
 			width: 520,
 			height: 500,
-			matrix: new DOMMatrixReadOnly().scale(40).translate(3, 2.5),
-			lineWidth: 2,
-			radiusKeyPoint: 5,
+			matrix: Matrix.IDENTITY.scale(40).translate(3, 2.5),
 		});
 
 		// 
-		monotiles.substitute();
+		const tile = Spectres.create(true).substitute().get(1);
 
-		monotiles.render(1);
-		monotiles.renderKeyPoints(1);
+		renderer.render(tile);
+		renderer.renderKeyPoints(tile);
 
 		// 
-		const image = await monotiles.renderer.extractImage();
+		const image = await renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -107,26 +101,22 @@
 	const exampleSuperClusterStrictA = async () => {
 
 		// 
-		const monotiles = new Monotiles();
+		const renderer = new Renderer();
 
-		monotiles.init({
-			strict: true,
+		renderer.init({
 			width: 620,
 			height: 760,
-			matrix: new DOMMatrixReadOnly().scale(20).translate(8.5, 12),
-			lineWidth: 2,
-			radiusKeyPoint: 5,
+			matrix: Matrix.IDENTITY.scale(20).translate(8.5, 12),
 		});
 
 		// 
-		monotiles.substitute();
-		monotiles.substitute();
+		const tile = Spectres.create(true).substitute().substitute().get(1);
 
-		monotiles.render(1);
-		monotiles.renderChildKeyPoints(1);
+		renderer.render(tile);
+		renderer.renderChildKeyPoints(tile);
 
 		// 
-		const image = await monotiles.renderer.extractImage();
+		const image = await renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -135,26 +125,22 @@
 	const exampleSuperClusterStrictB = async () => {
 
 		// 
-		const monotiles = new Monotiles();
+		const renderer = new Renderer();
 
-		monotiles.init({
-			strict: true,
+		renderer.init({
 			width: 620,
 			height: 760,
-			matrix: new DOMMatrixReadOnly().scale(20).translate(8.5, 12),
-			lineWidth: 2,
-			radiusKeyPoint: 5,
+			matrix: Matrix.IDENTITY.scale(20).translate(8.5, 12),
 		});
 
 		// 
-		monotiles.substitute();
-		monotiles.substitute();
+		const tile = Spectres.create(true).substitute().substitute().get(1);
 
-		monotiles.render(1);
-		monotiles.renderKeyPoints(1);
+		renderer.render(tile);
+		renderer.renderKeyPoints(tile);
 
 		// 
-		const image = await monotiles.renderer.extractImage();
+		const image = await renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -163,22 +149,22 @@
 	const exampleSpectre = async () => {
 
 		// 
-		const monotiles = new Monotiles();
+		const renderer = new Renderer();
 
-		monotiles.init({
+		renderer.init({
 			width: 400,
 			height: 320,
-			matrix: new DOMMatrixReadOnly().scale(80).translate(1, 1),
-			lineWidth: 2,
-			radiusKeyPoint: 5,
+			matrix: Matrix.IDENTITY.scale(80).translate(1, 1),
 		});
 
 		// 
-		monotiles.render(1);
-		monotiles.renderKeyPoints(1);
+		const tile = Spectres.create().get(1);
+
+		renderer.render(tile);
+		renderer.renderKeyPoints(tile);
 
 		// 
-		const image = await monotiles.renderer.extractImage();
+		const image = await renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -187,22 +173,22 @@
 	const exampleMystic = async () => {
 
 		// 
-		const monotiles = new Monotiles();
+		const renderer = new Renderer();
 
-		monotiles.init({
+		renderer.init({
 			width: 480,
 			height: 480,
-			matrix: new DOMMatrixReadOnly().scale(80).translate(1, 1),
-			lineWidth: 2,
-			radiusKeyPoint: 5,
+			matrix: Matrix.IDENTITY.scale(80).translate(1, 1),
 		});
 
 		// 
-		monotiles.render(0);
-		monotiles.renderKeyPoints(0);
+		const tile = Spectres.create().get(0);
+
+		renderer.render(tile);
+		renderer.renderKeyPoints(tile);
 
 		// 
-		const image = await monotiles.renderer.extractImage();
+		const image = await renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -211,24 +197,22 @@
 	const exampleClusterA = async () => {
 
 		// 
-		const monotiles = new Monotiles();
+		const renderer = new Renderer();
 
-		monotiles.init({
+		renderer.init({
 			width: 520,
 			height: 480,
-			matrix: new DOMMatrixReadOnly().scale(40).translate(3, 2),
-			lineWidth: 2,
-			radiusKeyPoint: 5,
+			matrix: Matrix.IDENTITY.scale(40).translate(3, 2),
 		});
 
 		// 
-		monotiles.substitute();
+		const tile = Spectres.create().substitute().get(1);
 
-		monotiles.render(1);
-		monotiles.renderChildKeyPoints(1);
+		renderer.render(tile);
+		renderer.renderChildKeyPoints(tile);
 
 		// 
-		const image = await monotiles.renderer.extractImage();
+		const image = await renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -237,24 +221,22 @@
 	const exampleClusterB = async () => {
 
 		// 
-		const monotiles = new Monotiles();
+		const renderer = new Renderer();
 
-		monotiles.init({
+		renderer.init({
 			width: 520,
 			height: 480,
-			matrix: new DOMMatrixReadOnly().scale(40).translate(3, 2),
-			lineWidth: 2,
-			radiusKeyPoint: 5,
+			matrix: Matrix.IDENTITY.scale(40).translate(3, 2),
 		});
 
 		// 
-		monotiles.substitute();
+		const tile = Spectres.create().substitute().get(1);
 
-		monotiles.render(1);
-		monotiles.renderKeyPoints(1);
+		renderer.render(tile);
+		renderer.renderKeyPoints(tile);
 
 		// 
-		const image = await monotiles.renderer.extractImage();
+		const image = await renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -263,25 +245,22 @@
 	const exampleSuperClusterA = async () => {
 
 		// 
-		const monotiles = new Monotiles();
+		const renderer = new Renderer();
 
-		monotiles.init({
+		renderer.init({
 			width: 620,
 			height: 760,
-			matrix: new DOMMatrixReadOnly().scale(20).translate(8, 12),
-			lineWidth: 2,
-			radiusKeyPoint: 5,
+			matrix: Matrix.IDENTITY.scale(20).translate(8, 12),
 		});
 
 		// 
-		monotiles.substitute();
-		monotiles.substitute();
+		const tile = Spectres.create().substitute().substitute().get(1);
 
-		monotiles.render(1);
-		monotiles.renderChildKeyPoints(1);
+		renderer.render(tile);
+		renderer.renderChildKeyPoints(tile);
 
 		// 
-		const image = await monotiles.renderer.extractImage();
+		const image = await renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -290,25 +269,22 @@
 	const exampleSuperClusterB = async () => {
 
 		// 
-		const monotiles = new Monotiles();
+		const renderer = new Renderer();
 
-		monotiles.init({
+		renderer.init({
 			width: 620,
 			height: 760,
-			matrix: new DOMMatrixReadOnly().scale(20).translate(8, 12),
-			lineWidth: 2,
-			radiusKeyPoint: 5,
+			matrix: Matrix.IDENTITY.scale(20).translate(8, 12),
 		});
 
 		// 
-		monotiles.substitute();
-		monotiles.substitute();
+		const tile = Spectres.create().substitute().substitute().get(1);
 
-		monotiles.render(1);
-		monotiles.renderKeyPoints(1);
+		renderer.render(tile);
+		renderer.renderKeyPoints(tile);
 
 		// 
-		const image = await monotiles.renderer.extractImage();
+		const image = await renderer.extractImage();
 
 		document.body.appendChild(image);
 
