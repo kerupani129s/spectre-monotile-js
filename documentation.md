@@ -38,6 +38,7 @@ context
 matrix
 
 radiusKeyPoint
+
 noFill
 noStrokeQuad
 noRenderCategoryName
