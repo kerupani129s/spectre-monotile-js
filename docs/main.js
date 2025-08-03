@@ -19,11 +19,7 @@
 		monotiles.renderKeyPoints(1);
 
 		// 
-		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
-		const image = new Image();
-		image.src = URL.createObjectURL(blob);
-		await image.decode();
-		URL.revokeObjectURL(image.src);
+		const image = await monotiles.renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -48,11 +44,7 @@
 		monotiles.renderKeyPoints(0);
 
 		// 
-		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
-		const image = new Image();
-		image.src = URL.createObjectURL(blob);
-		await image.decode();
-		URL.revokeObjectURL(image.src);
+		const image = await monotiles.renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -79,11 +71,7 @@
 		monotiles.renderChildKeyPoints(1);
 
 		// 
-		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
-		const image = new Image();
-		image.src = URL.createObjectURL(blob);
-		await image.decode();
-		URL.revokeObjectURL(image.src);
+		const image = await monotiles.renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -110,11 +98,7 @@
 		monotiles.renderKeyPoints(1);
 
 		// 
-		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
-		const image = new Image();
-		image.src = URL.createObjectURL(blob);
-		await image.decode();
-		URL.revokeObjectURL(image.src);
+		const image = await monotiles.renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -142,11 +126,7 @@
 		monotiles.renderChildKeyPoints(1);
 
 		// 
-		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
-		const image = new Image();
-		image.src = URL.createObjectURL(blob);
-		await image.decode();
-		URL.revokeObjectURL(image.src);
+		const image = await monotiles.renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -174,11 +154,7 @@
 		monotiles.renderKeyPoints(1);
 
 		// 
-		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
-		const image = new Image();
-		image.src = URL.createObjectURL(blob);
-		await image.decode();
-		URL.revokeObjectURL(image.src);
+		const image = await monotiles.renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -202,11 +178,7 @@
 		monotiles.renderKeyPoints(1);
 
 		// 
-		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
-		const image = new Image();
-		image.src = URL.createObjectURL(blob);
-		await image.decode();
-		URL.revokeObjectURL(image.src);
+		const image = await monotiles.renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -230,11 +202,7 @@
 		monotiles.renderKeyPoints(0);
 
 		// 
-		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
-		const image = new Image();
-		image.src = URL.createObjectURL(blob);
-		await image.decode();
-		URL.revokeObjectURL(image.src);
+		const image = await monotiles.renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -260,11 +228,7 @@
 		monotiles.renderChildKeyPoints(1);
 
 		// 
-		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
-		const image = new Image();
-		image.src = URL.createObjectURL(blob);
-		await image.decode();
-		URL.revokeObjectURL(image.src);
+		const image = await monotiles.renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -290,11 +254,7 @@
 		monotiles.renderKeyPoints(1);
 
 		// 
-		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
-		const image = new Image();
-		image.src = URL.createObjectURL(blob);
-		await image.decode();
-		URL.revokeObjectURL(image.src);
+		const image = await monotiles.renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -321,11 +281,7 @@
 		monotiles.renderChildKeyPoints(1);
 
 		// 
-		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
-		const image = new Image();
-		image.src = URL.createObjectURL(blob);
-		await image.decode();
-		URL.revokeObjectURL(image.src);
+		const image = await monotiles.renderer.extractImage();
 
 		document.body.appendChild(image);
 
@@ -352,11 +308,7 @@
 		monotiles.renderKeyPoints(1);
 
 		// 
-		const blob = await new Promise(resolve => monotiles.canvas.toBlob(resolve));
-		const image = new Image();
-		image.src = URL.createObjectURL(blob);
-		await image.decode();
-		URL.revokeObjectURL(image.src);
+		const image = await monotiles.renderer.extractImage();
 
 		document.body.appendChild(image);
 
