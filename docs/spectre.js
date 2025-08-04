@@ -296,7 +296,7 @@
 			].filter(point => DOMPointReadOnly.fromPoint(point));
 
 			// 変換行列: (0, 0) と (1, 0) を入れ替えるような 180 度回転
-			const matrixReverse = new DOMMatrixReadOnly([-1, 0, 0, -1, 1, 0]);
+			const matrixReversing = new DOMMatrixReadOnly([-1, 0, 0, -1, 1, 0]);
 
 			const pathStrict = new Path2D();
 			pathStrict.moveTo(points[0].x, points[0].y);
@@ -308,7 +308,7 @@
 						pointEnd.x - pointStart.x,
 						pointEnd.y - pointStart.y,
 					)
-					.multiply(i % 2 === 0 ? matrixReverse : Matrix.IDENTITY);
+					.multiply(i % 2 === 0 ? matrixReversing : Matrix.IDENTITY);
 				const controlPointsTransformed = controlPoints.map(point => matrix.transformPoint(point));
 				const indices = (i % 2 === 0 ? [1, 0] : [0, 1]);
 				pathStrict.bezierCurveTo(
