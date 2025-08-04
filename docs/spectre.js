@@ -260,9 +260,9 @@
 
 	const Spectre = class extends Tile {
 
-		static #keyPointIndices = [3, 5, 7, 11];
-
 		static #points;
+		static #keyPointIndices;
+
 		static #pathStrict;
 		static #path;
 
@@ -286,6 +286,8 @@
 				{ x: 0.0 - Math.sqrt(3) / 2, y: 1.5 },
 				{ x: 0.0, y: 1.0 },
 			].filter(point => DOMPointReadOnly.fromPoint(point));
+
+			const keyPointIndices = [3, 5, 7, 11];
 
 			const controlPoints = [
 				{ x: 1 / 3, y: 0.5 },
@@ -325,13 +327,15 @@
 
 			// 
 			this.#points = points;
+			this.#keyPointIndices = keyPointIndices;
+
 			this.#pathStrict = pathStrict;
 			this.#path = path;
 
 		}
 
-		static get keyPointIndices() {
-			return this.#keyPointIndices;
+		static get keyPoints() {
+			return this.#keyPointIndices.map(i => this.#points[i]);
 		}
 
 		static get points() {
@@ -405,9 +409,9 @@
 
 	const Hexagon = class extends Tile {
 
-		static #keyPointIndices = [1, 2, 3, 5];
-
 		static #points;
+		static #keyPointIndices;
+
 		static #path;
 
 		static {
@@ -421,6 +425,8 @@
 				{ x: -0.5, y: 0.0 + Math.sqrt(3) / 2 },
 			].filter(point => DOMPointReadOnly.fromPoint(point));
 
+			const keyPointIndices = [1, 2, 3, 5];
+
 			const path = new Path2D();
 			path.moveTo(points[0].x, points[0].y);
 			for (const { x, y } of points.slice(1)) {
@@ -430,12 +436,14 @@
 
 			// 
 			this.#points = points;
+			this.#keyPointIndices = keyPointIndices;
+
 			this.#path = path;
 
 		}
 
-		static get keyPointIndices() {
-			return this.#keyPointIndices;
+		static get keyPoints() {
+			return this.#keyPointIndices.map(i => this.#points[i]);
 		}
 
 		static get points() {
@@ -514,9 +522,7 @@
 
 		static createSpectres(strict = false) {
 
-			const keyPoints = Spectre.keyPointIndices.map(i => Spectre.points[i]);
-
-			const tiles = new Tiles(keyPoints);
+			const tiles = new Tiles(Spectre.keyPoints);
 
 			tiles.set(0, new Mystic(strict, tiles));
 			for (let categoryID = 1; categoryID < Tiles.length; categoryID++) {
@@ -529,9 +535,7 @@
 
 		static createHexagons() {
 
-			const keyPoints = Hexagon.keyPointIndices.map(i => Hexagon.points[i]);
-
-			const tiles = new Tiles(keyPoints);
+			const tiles = new Tiles(Hexagon.keyPoints);
 
 			for (let categoryID = 0; categoryID < Tiles.length; categoryID++) {
 				tiles.set(categoryID, new Hexagon(categoryID, tiles));
