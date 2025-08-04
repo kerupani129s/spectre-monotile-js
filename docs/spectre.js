@@ -18,7 +18,7 @@
 			return this.#flipping;
 		}
 
-		static decomposeScale(matrix) {
+		static extractScale(matrix) {
 
 			// [c, s, - s, c, 0, 0] [x, 0, 0, y, 0, 0] = [c x, s x, - s y, c y, 0, 0]
 			// sqrt((  c x) ^ 2 + (s x) ^ 2) = sqrt(c ^ 2 + s ^ 2) x = x
@@ -188,7 +188,7 @@
 		renderCategoryName(renderer, matrix) {
 
 			// TODO: Supertile で描画したい場合、大きさと位置を変更
-			const fontSize = Matrix.decomposeScale(matrix).y;
+			const fontSize = Matrix.extractScale(matrix).y;
 			const { x, y } = matrix.transformPoint(new DOMPointReadOnly(1.15, 1.1));
 
 			renderer.context.fillStyle = '#000000';

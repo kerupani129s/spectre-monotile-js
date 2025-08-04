@@ -10,7 +10,7 @@
 static get IDENTITY()
 static get FLIPPING()
 
-static decomposeScale(matrix)
+static extractScale(matrix)
 ```
 
 ## Rendering
