@@ -9,11 +9,11 @@
 ## Usage
 
 ```html
-<script src="spectre.js?v=2.0.0"></script>
+<script src="spectre.js?v=3.0.0"></script>
 ```
 
 ```javascript
-const { Matrix, Renderer, Spectres } = Monotile;
+const { Matrix, Renderer, Tiling } = Monotile;
 
 // 
 const renderer = new Renderer();
@@ -27,7 +27,7 @@ renderer.init({
 document.body.appendChild(renderer.canvas);
 
 // 
-const tile = Spectres.create(true).substitute().get(1);
+const tile = Tiling.createSpectres(true).substitute().get(1);
 
 renderer.render(tile);
 renderer.renderChildKeyPoints(tile);

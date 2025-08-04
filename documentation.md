@@ -65,16 +65,6 @@ get categoryID()
 get categoryName()
 ```
 
-### Tiles class
-
-```javascript
-static get length()
-
-get keyPoints()
-
-get(categoryID)
-```
-
 ### Supertile class
 
 Inheritance: `Tile`
@@ -99,12 +89,14 @@ constructor(strict = false)
 
 ## Tiling
 
-### Spectres class
-
-Inheritance: `Tiles`
+### Tiling class
 
 ```javascript
-static create(strict = false)
+static get length()
+
+static createSpectres(strict = false)
+
+get(categoryID)
 
 substitute()
 ```

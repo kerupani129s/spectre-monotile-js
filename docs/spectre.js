@@ -406,7 +406,7 @@
 	// 
 	// タイル張り
 	// 
-	const Spectres = class extends Tiles {
+	const Tiling = class {
 
 		static #rulesChildMatrix = [
 			{ sharedKeyPointIndices: [3, 0], angle: 0 },
@@ -438,19 +438,33 @@
 			{ childIndex: 1, keyPointIndex: 1 },
 		];
 
-		static create(strict = false) {
+		#tiles;
+
+		static get length() {
+			return Tiles.length;
+		}
+
+		static createSpectres(strict = false) {
 
 			const keyPoints = Spectre.keyPointIndices.map(i => Spectre.points[i]);
 
-			const tiles = new Spectres(keyPoints);
+			const tiles = new Tiles(keyPoints);
 
 			tiles.set(0, new Mystic(strict, tiles));
 			for (let categoryID = 1; categoryID < Tiles.length; categoryID++) {
 				tiles.set(categoryID, new Spectre(categoryID, strict, tiles));
 			}
 
-			return tiles;
+			return new Tiling(tiles);
 
+		}
+
+		constructor(tiles) {
+			this.#tiles = tiles;
+		}
+
+		get(categoryID) {
+			return this.#tiles.get(categoryID);
 		}
 
 		#generateChildMatrices() {
@@ -459,14 +473,14 @@
 
 			let point;
 
-			for (const [childIndex, ruleChildMatrix] of Spectres.#rulesChildMatrix.entries()) {
+			for (const [childIndex, ruleChildMatrix] of Tiling.#rulesChildMatrix.entries()) {
 
 				const { sharedKeyPointIndices, angle } = ruleChildMatrix;
 
 				// 変換行列: 回転
 				const matrixRotation = Matrix.IDENTITY.rotate(angle);
 
-				const sharedKeyPoints = sharedKeyPointIndices.map(i => this.keyPoints[i]);
+				const sharedKeyPoints = sharedKeyPointIndices.map(i => this.#tiles.keyPoints[i]);
 				const sharedKeyPointsRotated = sharedKeyPoints
 					.map(sharedKeyPoint => matrixRotation.transformPoint(sharedKeyPoint));
 
@@ -499,10 +513,10 @@
 
 		#generateKeyPoints(matricesChild) {
 
-			return Spectres.#rulesKeyPoint.map(({ childIndex, keyPointIndex }) => {
+			return Tiling.#rulesKeyPoint.map(({ childIndex, keyPointIndex }) => {
 
 				const matrixChild = matricesChild[childIndex];
-				const keyPointChild = this.keyPoints[keyPointIndex];
+				const keyPointChild = this.#tiles.keyPoints[keyPointIndex];
 
 				return matrixChild.transformPoint(keyPointChild);
 
@@ -512,14 +526,14 @@
 
 		#createSupertile(categoryID, matricesChild, tiles) {
 
-			const ruleChildCategory = Spectres.#rulesChildCategory[categoryID];
+			const ruleChildCategory = Tiling.#rulesChildCategory[categoryID];
 
 			// 
 			const supertile = new Supertile(categoryID, tiles);
 
 			for (const [childIndex, categoryIDChild] of ruleChildCategory.entries()) {
 				if ( categoryIDChild >= 0 ) {
-					supertile.addChild(this.get(categoryIDChild), matricesChild[childIndex]);
+					supertile.addChild(this.#tiles.get(categoryIDChild), matricesChild[childIndex]);
 				}
 			}
 
@@ -534,7 +548,7 @@
 			const keyPoints = this.#generateKeyPoints(matricesChild);
 
 			// 
-			const tiles = new Spectres(keyPoints);
+			const tiles = new Tiles(keyPoints);
 
 			for (let categoryID = 0; categoryID < Tiles.length; categoryID++) {
 				tiles.set(
@@ -543,7 +557,7 @@
 				);
 			}
 
-			return tiles;
+			return new Tiling(tiles);
 
 		}
 
@@ -552,8 +566,8 @@
 	window.Monotile = {
 		Matrix,
 		Renderer,
-		Tile, Tiles, Supertile, Spectre, Mystic,
-		Spectres,
+		Tile, Supertile, Spectre, Mystic,
+		Tiling,
 	};
 
 })();

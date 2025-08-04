@@ -1,6 +1,6 @@
 (async () => {
 
-	const { Matrix, Renderer, Spectres } = Monotile;
+	const { Matrix, Renderer, Tiling } = Monotile;
 
 	const exampleSpectreStrict = async () => {
 
@@ -14,7 +14,7 @@
 		});
 
 		// 
-		const tile = Spectres.create(true).get(1);
+		const tile = Tiling.createSpectres(true).get(1);
 
 		renderer.render(tile);
 		renderer.renderKeyPoints(tile);
@@ -38,7 +38,7 @@
 		});
 
 		// 
-		const tile = Spectres.create(true).get(0);
+		const tile = Tiling.createSpectres(true).get(0);
 
 		renderer.render(tile);
 		renderer.renderKeyPoints(tile);
@@ -62,7 +62,7 @@
 		});
 
 		// 
-		const tile = Spectres.create(true).substitute().get(1);
+		const tile = Tiling.createSpectres(true).substitute().get(1);
 
 		renderer.render(tile);
 		renderer.renderChildKeyPoints(tile);
@@ -86,7 +86,7 @@
 		});
 
 		// 
-		const tile = Spectres.create(true).substitute().get(1);
+		const tile = Tiling.createSpectres(true).substitute().get(1);
 
 		renderer.render(tile);
 		renderer.renderKeyPoints(tile);
@@ -110,7 +110,7 @@
 		});
 
 		// 
-		const tile = Spectres.create(true).substitute().substitute().get(1);
+		const tile = Tiling.createSpectres(true).substitute().substitute().get(1);
 
 		renderer.render(tile);
 		renderer.renderChildKeyPoints(tile);
@@ -134,7 +134,7 @@
 		});
 
 		// 
-		const tile = Spectres.create(true).substitute().substitute().get(1);
+		const tile = Tiling.createSpectres(true).substitute().substitute().get(1);
 
 		renderer.render(tile);
 		renderer.renderKeyPoints(tile);
@@ -158,7 +158,7 @@
 		});
 
 		// 
-		const tile = Spectres.create().get(1);
+		const tile = Tiling.createSpectres().get(1);
 
 		renderer.render(tile);
 		renderer.renderKeyPoints(tile);
@@ -182,7 +182,7 @@
 		});
 
 		// 
-		const tile = Spectres.create().get(0);
+		const tile = Tiling.createSpectres().get(0);
 
 		renderer.render(tile);
 		renderer.renderKeyPoints(tile);
@@ -206,7 +206,7 @@
 		});
 
 		// 
-		const tile = Spectres.create().substitute().get(1);
+		const tile = Tiling.createSpectres().substitute().get(1);
 
 		renderer.render(tile);
 		renderer.renderChildKeyPoints(tile);
@@ -230,7 +230,7 @@
 		});
 
 		// 
-		const tile = Spectres.create().substitute().get(1);
+		const tile = Tiling.createSpectres().substitute().get(1);
 
 		renderer.render(tile);
 		renderer.renderKeyPoints(tile);
@@ -254,7 +254,7 @@
 		});
 
 		// 
-		const tile = Spectres.create().substitute().substitute().get(1);
+		const tile = Tiling.createSpectres().substitute().substitute().get(1);
 
 		renderer.render(tile);
 		renderer.renderChildKeyPoints(tile);
@@ -278,7 +278,7 @@
 		});
 
 		// 
-		const tile = Spectres.create().substitute().substitute().get(1);
+		const tile = Tiling.createSpectres().substitute().substitute().get(1);
 
 		renderer.render(tile);
 		renderer.renderKeyPoints(tile);
