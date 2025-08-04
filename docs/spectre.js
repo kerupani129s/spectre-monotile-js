@@ -189,7 +189,7 @@
 
 			// TODO: Supertile で描画したい場合、大きさと位置を変更
 			const fontSize = Matrix.extractScale(matrix).y;
-			const { x, y } = matrix.transformPoint(new DOMPointReadOnly(1.15, 1.1));
+			const { x, y } = matrix.transformPoint(new DOMPointReadOnly());
 
 			renderer.context.fillStyle = '#000000';
 			renderer.context.font = `${fontSize}px serif`;
@@ -265,6 +265,7 @@
 
 		static #pathStrict;
 		static #path;
+		static #categoryNamePosition;
 
 		#strict;
 
@@ -325,12 +326,15 @@
 			}
 			path.closePath();
 
+			const categoryNamePosition = { x: 1.15, y: 1.1 };
+
 			// 
 			this.#points = points;
 			this.#keyPointIndices = keyPointIndices;
 
 			this.#pathStrict = pathStrict;
 			this.#path = path;
+			this.#categoryNamePosition = categoryNamePosition;
 
 		}
 
@@ -367,7 +371,8 @@
 			renderer.context.stroke(path);
 
 			if ( ! renderer.noRenderCategoryName ) {
-				this.renderCategoryName(renderer, matrix);
+				const { x, y } = Spectre.#categoryNamePosition;
+				this.renderCategoryName(renderer, matrix.translate(x, y));
 			}
 
 		}
@@ -413,6 +418,7 @@
 		static #keyPointIndices;
 
 		static #path;
+		static #categoryNamePosition;
 
 		static {
 
@@ -434,11 +440,14 @@
 			}
 			path.closePath();
 
+			const categoryNamePosition = { x: 0.5, y: Math.sqrt(3) / 2 };
+
 			// 
 			this.#points = points;
 			this.#keyPointIndices = keyPointIndices;
 
 			this.#path = path;
+			this.#categoryNamePosition = categoryNamePosition;
 
 		}
 
@@ -472,7 +481,8 @@
 			renderer.context.stroke(path);
 
 			if ( ! renderer.noRenderCategoryName ) {
-				this.renderCategoryName(renderer, matrix);
+				const { x, y } = Hexagon.#categoryNamePosition;
+				this.renderCategoryName(renderer, matrix.translate(x, y));
 			}
 
 		}
