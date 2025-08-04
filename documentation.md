@@ -87,6 +87,16 @@ Inheritance: `Tile`
 constructor(strict = false)
 ```
 
+### Hexagon class
+
+Inheritance: `Tile`
+
+```javascript
+static get points()
+
+constructor(categoryID)
+```
+
 ## Tiling
 
 ### Tiling class
@@ -95,6 +105,7 @@ constructor(strict = false)
 static get length()
 
 static createSpectres(strict = false)
+static createHexagons()
 
 get(categoryID)
 

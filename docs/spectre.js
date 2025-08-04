@@ -403,6 +403,74 @@
 
 	};
 
+	const Hexagon = class extends Tile {
+
+		static #keyPointIndices = [1, 2, 3, 5];
+
+		static #points;
+		static #path;
+
+		static {
+
+			const points = [
+				{ x: 0.0, y: 0.0 },
+				{ x: 1.0, y: 0.0 },
+				{ x: 1.5, y: 0.0 + Math.sqrt(3) / 2 },
+				{ x: 1.0, y: 0.0 + Math.sqrt(3) },
+				{ x: 0.0, y: 0.0 + Math.sqrt(3) },
+				{ x: -0.5, y: 0.0 + Math.sqrt(3) / 2 },
+			].filter(point => DOMPointReadOnly.fromPoint(point));
+
+			const path = new Path2D();
+			path.moveTo(points[0].x, points[0].y);
+			for (const { x, y } of points.slice(1)) {
+				path.lineTo(x, y);
+			}
+			path.closePath();
+
+			// 
+			this.#points = points;
+			this.#path = path;
+
+		}
+
+		static get keyPointIndices() {
+			return this.#keyPointIndices;
+		}
+
+		static get points() {
+			return this.#points;
+		}
+
+		constructor(categoryID, tiles = null) {
+			super(categoryID, tiles);
+		}
+
+		render(renderer, matrix) {
+
+			if ( ! renderer.noFill ) {
+				if ( this.categoryID === 0 ) {
+					renderer.context.fillStyle = '#80ffff';
+				} else {
+					renderer.context.fillStyle = '#ffffff';
+				}
+			}
+
+			const path = new Path2D();
+			path.addPath(Hexagon.#path, matrix);
+			if ( ! renderer.noFill ) {
+				renderer.context.fill(path);
+			}
+			renderer.context.stroke(path);
+
+			if ( ! renderer.noRenderCategoryName ) {
+				this.renderCategoryName(renderer, matrix);
+			}
+
+		}
+
+	};
+
 	// 
 	// タイル張り
 	// 
@@ -453,6 +521,20 @@
 			tiles.set(0, new Mystic(strict, tiles));
 			for (let categoryID = 1; categoryID < Tiles.length; categoryID++) {
 				tiles.set(categoryID, new Spectre(categoryID, strict, tiles));
+			}
+
+			return new Tiling(tiles);
+
+		}
+
+		static createHexagons() {
+
+			const keyPoints = Hexagon.keyPointIndices.map(i => Hexagon.points[i]);
+
+			const tiles = new Tiles(keyPoints);
+
+			for (let categoryID = 0; categoryID < Tiles.length; categoryID++) {
+				tiles.set(categoryID, new Hexagon(categoryID, tiles));
 			}
 
 			return new Tiling(tiles);
@@ -566,7 +648,7 @@
 	window.Monotile = {
 		Matrix,
 		Renderer,
-		Tile, Supertile, Spectre, Mystic,
+		Tile, Supertile, Spectre, Mystic, Hexagon,
 		Tiling,
 	};
 
