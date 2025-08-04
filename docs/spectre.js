@@ -124,6 +124,80 @@
 	};
 
 	// 
+	// 辺の形状
+	// 
+	const EdgeShapePath = class {
+
+		joinPath(path, pointStart, pointEnd, reversed) {}
+
+		generateShapePath(points) {
+
+			const path = new Path2D();
+
+			path.moveTo(points[0].x, points[0].y);
+
+			for (const [i, pointStart] of points.entries()) {
+				const pointEnd = points[i === points.length - 1 ? 0 : i + 1];
+				this.joinPath(path, pointStart, pointEnd, i % 2 === 0);
+			}
+
+			path.closePath();
+
+			return path;
+
+		}
+
+	};
+
+	const Line = class extends EdgeShapePath {
+
+		joinPath(path, pointStart, pointEnd, reversed) {
+			path.lineTo(pointEnd.x, pointEnd.y);
+		}
+
+	};
+
+	const BezierCurve = class extends EdgeShapePath {
+
+		// 変換行列: (0, 0) と (1, 0) を入れ替えるような 180 度回転
+		static #matrixReversing = new DOMMatrixReadOnly([-1, 0, 0, -1, 1, 0]);
+
+		static #controlPoints;
+
+		static {
+
+			const controlPoints = [
+				{ x: 1 / 3, y: 0.5 },
+				{ x: 1 - 1 / 3, y: 0.5 },
+			].filter(point => DOMPointReadOnly.fromPoint(point));
+
+			this.#controlPoints = controlPoints;
+
+		}
+
+		joinPath(path, pointStart, pointEnd, reversed) {
+
+			const matrix = Matrix.IDENTITY
+				.translate(pointStart.x, pointStart.y)
+				.rotateFromVector(
+					pointEnd.x - pointStart.x,
+					pointEnd.y - pointStart.y,
+				)
+				.multiply(reversed ? BezierCurve.#matrixReversing : Matrix.IDENTITY);
+			const controlPoints = BezierCurve.#controlPoints.map(point => matrix.transformPoint(point));
+			const indices = (reversed ? [1, 0] : [0, 1]);
+
+			path.bezierCurveTo(
+				controlPoints[indices[0]].x, controlPoints[indices[0]].y,
+				controlPoints[indices[1]].x, controlPoints[indices[1]].y,
+				pointEnd.x, pointEnd.y,
+			);
+
+		}
+
+	};
+
+	// 
 	// タイル
 	// 
 	const Tile = class {
@@ -290,41 +364,8 @@
 
 			const keyPointIndices = [3, 5, 7, 11];
 
-			const controlPoints = [
-				{ x: 1 / 3, y: 0.5 },
-				{ x: 1 - 1 / 3, y: 0.5 },
-			].filter(point => DOMPointReadOnly.fromPoint(point));
-
-			// 変換行列: (0, 0) と (1, 0) を入れ替えるような 180 度回転
-			const matrixReversing = new DOMMatrixReadOnly([-1, 0, 0, -1, 1, 0]);
-
-			const pathStrict = new Path2D();
-			pathStrict.moveTo(points[0].x, points[0].y);
-			for (const [i, pointStart] of points.entries()) {
-				const pointEnd = points[i === points.length - 1 ? 0 : i + 1];
-				const matrix = Matrix.IDENTITY
-					.translate(pointStart.x, pointStart.y)
-					.rotateFromVector(
-						pointEnd.x - pointStart.x,
-						pointEnd.y - pointStart.y,
-					)
-					.multiply(i % 2 === 0 ? matrixReversing : Matrix.IDENTITY);
-				const controlPointsTransformed = controlPoints.map(point => matrix.transformPoint(point));
-				const indices = (i % 2 === 0 ? [1, 0] : [0, 1]);
-				pathStrict.bezierCurveTo(
-					controlPointsTransformed[indices[0]].x, controlPointsTransformed[indices[0]].y,
-					controlPointsTransformed[indices[1]].x, controlPointsTransformed[indices[1]].y,
-					pointEnd.x, pointEnd.y,
-				);
-			}
-			pathStrict.closePath();
-
-			const path = new Path2D();
-			path.moveTo(points[0].x, points[0].y);
-			for (const { x, y } of points.slice(1)) {
-				path.lineTo(x, y);
-			}
-			path.closePath();
+			const pathStrict = new BezierCurve().generateShapePath(points);
+			const path = new Line().generateShapePath(points);
 
 			const categoryNamePosition = { x: 1.15, y: 1.1 };
 
@@ -662,6 +703,7 @@
 	window.Monotile = {
 		Matrix,
 		Renderer,
+		// TODO: EdgeShapePath, Line, BezierCurve,
 		Tile, Supertile, Spectre, Mystic, Hexagon,
 		Tiling,
 	};
