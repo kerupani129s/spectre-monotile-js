@@ -126,7 +126,7 @@
 	// 
 	// 辺の形状
 	// 
-	const EdgeShapePath = class {
+	const EdgePath = class {
 
 		static get LINE() {
 			// メモ: 後で定義
@@ -140,7 +140,7 @@
 
 		joinPath(path, pointStart, pointEnd, reversed) {}
 
-		generateShapePath(points) {
+		generatePath(points) {
 
 			const path = new Path2D();
 
@@ -159,7 +159,7 @@
 
 	};
 
-	const Line = class extends EdgeShapePath {
+	const Line = class extends EdgePath {
 
 		joinPath(path, pointStart, pointEnd, reversed) {
 			path.lineTo(pointEnd.x, pointEnd.y);
@@ -167,7 +167,7 @@
 
 	};
 
-	const BezierCurve = class extends EdgeShapePath {
+	const BezierCurve = class extends EdgePath {
 
 		// 変換行列: (0, 0) と (1, 0) を入れ替えるような 180 度回転
 		static #matrixReversing = new DOMMatrixReadOnly([-1, 0, 0, -1, 1, 0]);
@@ -207,7 +207,7 @@
 
 	};
 
-	// メモ: EdgeShapePath の初期化完了前に EdgeShapePath のプロパティに代入することは不可
+	// メモ: EdgePath の初期化完了前に EdgePath のプロパティに代入することは不可
 	const line = new Line();
 	const bezierCurve = new BezierCurve();
 
@@ -378,8 +378,8 @@
 
 			const keyPointIndices = [3, 5, 7, 11];
 
-			const pathStrict = EdgeShapePath.BEZIER_CURVE.generateShapePath(points);
-			const path = EdgeShapePath.LINE.generateShapePath(points);
+			const pathStrict = EdgePath.BEZIER_CURVE.generatePath(points);
+			const path = EdgePath.LINE.generatePath(points);
 
 			const categoryNamePosition = { x: 1.15, y: 1.1 };
 
@@ -717,7 +717,7 @@
 	window.Monotile = {
 		Matrix,
 		Renderer,
-		// TODO: EdgeShapePath,
+		// TODO: EdgePath,
 		Tile, Supertile, Spectre, Mystic, Hexagon,
 		Tiling,
 	};
