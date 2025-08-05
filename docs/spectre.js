@@ -128,6 +128,16 @@
 	// 
 	const EdgeShapePath = class {
 
+		static get LINE() {
+			// メモ: 後で定義
+			return line;
+		}
+
+		static get BEZIER_CURVE() {
+			// メモ: 後で定義
+			return bezierCurve;
+		}
+
 		joinPath(path, pointStart, pointEnd, reversed) {}
 
 		generateShapePath(points) {
@@ -196,6 +206,10 @@
 		}
 
 	};
+
+	// メモ: EdgeShapePath の初期化完了前に EdgeShapePath のプロパティに代入することは不可
+	const line = new Line();
+	const bezierCurve = new BezierCurve();
 
 	// 
 	// タイル
@@ -364,8 +378,8 @@
 
 			const keyPointIndices = [3, 5, 7, 11];
 
-			const pathStrict = new BezierCurve().generateShapePath(points);
-			const path = new Line().generateShapePath(points);
+			const pathStrict = EdgeShapePath.BEZIER_CURVE.generateShapePath(points);
+			const path = EdgeShapePath.LINE.generateShapePath(points);
 
 			const categoryNamePosition = { x: 1.15, y: 1.1 };
 
@@ -703,7 +717,7 @@
 	window.Monotile = {
 		Matrix,
 		Renderer,
-		// TODO: EdgeShapePath, Line, BezierCurve,
+		// TODO: EdgeShapePath,
 		Tile, Supertile, Spectre, Mystic, Hexagon,
 		Tiling,
 	};
