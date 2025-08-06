@@ -258,7 +258,7 @@
 			if ( ! renderer.noStrokeQuad ) {
 				const pathQuad = new Path2D();
 				pathQuad.moveTo(points[0].x, points[0].y);
-				for (const { x, y } of points.slice(1)) {
+				for (const { x, y } of points.values().drop(1)) {
 					pathQuad.lineTo(x, y);
 				}
 				pathQuad.closePath();
@@ -490,7 +490,7 @@
 
 			const path = new Path2D();
 			path.moveTo(points[0].x, points[0].y);
-			for (const { x, y } of points.slice(1)) {
+			for (const { x, y } of points.values().drop(1)) {
 				path.lineTo(x, y);
 			}
 			path.closePath();
