@@ -620,43 +620,52 @@
 
 		#generateChildMatrices() {
 
-			const matricesChildBase = [];
+			// メモ: array.values().map(f)
+			const rulesIterator = Tiling.#rulesChildMatrix.values()
+				.map(({ sharedKeyPointIndices, angle }) => ({
+					matrixRotation: Matrix.IDENTITY.rotate(angle),
+					sharedKeyPoints: sharedKeyPointIndices.map(i => this.#tiles.keyPoints[i]),
+				}));
 
-			let point;
+			// メモ: array.values() の場合は take(1) を配列に変換すると done にならない
+			//       array.values().map(f) の場合は take(1) を配列に変換すると done になる
+			const first = rulesIterator.take(1)
+				.map(({ matrixRotation, sharedKeyPoints }) => ({
+					matrix: Matrix.FLIPPING.multiply(matrixRotation),
+					point: matrixRotation.transformPoint(sharedKeyPoints[1]),
+				}))
+				.next().value;
 
-			for (const [childIndex, ruleChildMatrix] of Tiling.#rulesChildMatrix.entries()) {
+			const matricesChild = rulesIterator
+				.reduce(({ matrices, point }, { matrixRotation, sharedKeyPoints }) => {
 
-				const { sharedKeyPointIndices, angle } = ruleChildMatrix;
+					const sharedKeyPointRotated = matrixRotation.transformPoint(sharedKeyPoints[0]);
 
-				// 変換行列: 回転
-				const matrixRotation = Matrix.IDENTITY.rotate(angle);
+					// 変換行列: 移動
+					const matrixTranslation = Matrix.IDENTITY.translate(
+						point.x - sharedKeyPointRotated.x,
+						point.y - sharedKeyPointRotated.y,
+					);
 
-				const sharedKeyPoints = sharedKeyPointIndices.map(i => this.#tiles.keyPoints[i]);
-				const sharedKeyPointsRotated = sharedKeyPoints
-					.map(sharedKeyPoint => matrixRotation.transformPoint(sharedKeyPoint));
+					// 変換行列: 回転, 移動
+					const matrixBase = matrixTranslation.multiply(matrixRotation);
 
-				if ( childIndex === 0) {
-					point = sharedKeyPointsRotated[1];
-					matricesChildBase.push(matrixRotation);
-					continue;
-				}
+					// 変換行列: 回転, 移動, 反転
+					const matrix = Matrix.FLIPPING.multiply(matrixBase);
 
-				// 変換行列: 移動
-				const matrixTranslation = Matrix.IDENTITY.translate(
-					point.x - sharedKeyPointsRotated[0].x,
-					point.y - sharedKeyPointsRotated[0].y,
-				);
+					// 
+					matrices.push(matrix);
 
-				// 変換行列: 回転, 移動
-				const matrix = matrixTranslation.multiply(matrixRotation);
+					return {
+						matrices,
+						point: matrixBase.transformPoint(sharedKeyPoints[1]),
+					};
 
-				point = matrix.transformPoint(sharedKeyPoints[1]);
-				matricesChildBase.push(matrix);
-
-			}
-
-			// 変換行列: 回転, 移動, 反転
-			const matricesChild = matricesChildBase.map(matrix => Matrix.FLIPPING.multiply(matrix));
+				}, {
+					matrices: [first.matrix],
+					point: first.point,
+				})
+				.matrices;
 
 			return matricesChild;
 
