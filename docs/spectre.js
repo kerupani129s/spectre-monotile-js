@@ -179,7 +179,7 @@
 			const controlPoints = [
 				{ x: 1 / 3, y: 0.5 },
 				{ x: 1 - 1 / 3, y: 0.5 },
-			].filter(point => DOMPointReadOnly.fromPoint(point));
+			].map(point => DOMPointReadOnly.fromPoint(point));
 
 			this.#controlPoints = controlPoints;
 
@@ -374,7 +374,7 @@
 				{ x: 0.5 - Math.sqrt(3) / 2, y: 1.5 + Math.sqrt(3) / 2 },
 				{ x: 0.0 - Math.sqrt(3) / 2, y: 1.5 },
 				{ x: 0.0, y: 1.0 },
-			].filter(point => DOMPointReadOnly.fromPoint(point));
+			].map(point => DOMPointReadOnly.fromPoint(point));
 
 			const keyPointIndices = [3, 5, 7, 11];
 
@@ -484,7 +484,7 @@
 				{ x: 1.0, y: 0.0 + Math.sqrt(3) },
 				{ x: 0.0, y: 0.0 + Math.sqrt(3) },
 				{ x: -0.5, y: 0.0 + Math.sqrt(3) / 2 },
-			].filter(point => DOMPointReadOnly.fromPoint(point));
+			].map(point => DOMPointReadOnly.fromPoint(point));
 
 			const keyPointIndices = [1, 2, 3, 5];
 
