@@ -56,6 +56,15 @@ renderChildKeyPoints(tile, matrix = Matrix.IDENTITY)
 async extractImage({ type, quality } = {})
 ```
 
+## Edges
+
+### EdgeShape class
+
+```javascript
+static get LINE()
+static get BEZIER_CURVE()
+```
+
 ## Tiles
 
 ### Tile class
@@ -76,7 +85,7 @@ Inheritance: `Tile`
 ```javascript
 static get points()
 
-constructor({ categoryID = 1, strict = false })
+constructor({ categoryID = 1, edgeShape = EdgeShape.LINE })
 ```
 
 ### Mystic class
@@ -84,7 +93,7 @@ constructor({ categoryID = 1, strict = false })
 Inheritance: `Tile`
 
 ```javascript
-constructor({ strict = false })
+constructor({ edgeShape = EdgeShape.LINE })
 ```
 
 ### Hexagon class
@@ -104,7 +113,7 @@ constructor({ categoryID = 1 })
 ```javascript
 static get length()
 
-static createSpectres(strict = false)
+static createSpectres(edgeShape = EdgeShape.LINE)
 static createHexagons()
 
 get(categoryID)

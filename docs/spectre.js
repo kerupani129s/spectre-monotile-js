@@ -398,11 +398,9 @@
 		static #points;
 		static #keyPointIndices;
 
-		static #pathStrict;
-		static #path;
 		static #categoryNamePosition;
 
-		#strict;
+		#path;
 
 		static {
 
@@ -425,17 +423,12 @@
 
 			const keyPointIndices = [3, 5, 7, 11];
 
-			const pathStrict = EdgeShape.BEZIER_CURVE.generatePath(points);
-			const path = EdgeShape.LINE.generatePath(points);
-
 			const categoryNamePosition = { x: 1.15, y: 1.1 };
 
 			// 
 			this.#points = points;
 			this.#keyPointIndices = keyPointIndices;
 
-			this.#pathStrict = pathStrict;
-			this.#path = path;
 			this.#categoryNamePosition = categoryNamePosition;
 
 		}
@@ -448,9 +441,9 @@
 			return this.#points;
 		}
 
-		constructor({ categoryID = 1, strict = false, tiles = null } ) {
+		constructor({ categoryID = 1, edgeShape = EdgeShape.LINE, path = null, tiles = null }) {
 			super({ categoryID, tiles });
-			this.#strict = strict;
+			this.#path = path ?? edgeShape.generatePath(Spectre.points);
 		}
 
 		render(renderer, matrix) {
@@ -466,7 +459,7 @@
 			}
 
 			const path = new Path2D();
-			path.addPath((this.#strict ? Spectre.#pathStrict : Spectre.#path), matrix);
+			path.addPath(this.#path, matrix);
 			if ( ! renderer.noFill ) {
 				renderer.context.fill(path);
 			}
@@ -490,13 +483,15 @@
 
 		#children;
 
-		constructor({ strict = false, tiles = null }) {
+		constructor({ edgeShape = EdgeShape.LINE, path = null, tiles = null }) {
 
 			super({ categoryID: 0, tiles });
 
+			const pathChild = path ?? edgeShape.generatePath(Spectre.points);
+
 			this.#children = Mystic.#rulesChild.map(({ categoryID, pointIndex, angle }) => {
 
-				const tile = new Spectre({ categoryID, strict });
+				const tile = new Spectre({ categoryID, path: pathChild });
 				const { x, y } = Spectre.points[pointIndex];
 				const matrix = Matrix.IDENTITY.translate(x, y).rotate(angle);
 
@@ -627,13 +622,16 @@
 			return Tiles.length;
 		}
 
-		static createSpectres(strict = false) {
+		static createSpectres(edgeShape = EdgeShape.LINE) {
 
+			const path = edgeShape.generatePath(Spectre.points);
+
+			// 
 			const tiles = new Tiles(Spectre.keyPoints);
 
-			tiles.set(0, new Mystic({ strict, tiles }));
+			tiles.set(0, new Mystic({ path, tiles }));
 			for (let categoryID = 1; categoryID < Tiles.length; categoryID++) {
-				tiles.set(categoryID, new Spectre({ categoryID, strict, tiles }));
+				tiles.set(categoryID, new Spectre({ categoryID, path, tiles }));
 			}
 
 			return new Tiling(tiles);
@@ -768,7 +766,8 @@
 	window.Monotile = {
 		Matrix,
 		Renderer,
-		// TODO: EdgePath, EdgeShape,
+		// TODO: EdgePath,
+		EdgeShape,
 		Tile, Supertile, Spectre, Mystic, Hexagon,
 		Tiling,
 	};
