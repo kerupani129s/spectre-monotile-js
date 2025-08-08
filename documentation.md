@@ -76,7 +76,7 @@ Inheritance: `Tile`
 ```javascript
 static get points()
 
-constructor(categoryID, strict = false)
+constructor({ categoryID = 1, strict = false })
 ```
 
 ### Mystic class
@@ -84,7 +84,7 @@ constructor(categoryID, strict = false)
 Inheritance: `Tile`
 
 ```javascript
-constructor(strict = false)
+constructor({ strict = false })
 ```
 
 ### Hexagon class
@@ -94,7 +94,7 @@ Inheritance: `Tile`
 ```javascript
 static get points()
 
-constructor(categoryID)
+constructor({ categoryID = 1 })
 ```
 
 ## Tiling

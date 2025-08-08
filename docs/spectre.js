@@ -268,7 +268,7 @@
 		#categoryID;
 		#tiles;
 
-		constructor(categoryID, tiles = null) {
+		constructor({ categoryID = 1, tiles = null }) {
 			this.#categoryID = categoryID;
 			this.#tiles = tiles;
 		}
@@ -371,8 +371,8 @@
 
 		#children = [];
 
-		constructor(categoryID, tiles = null) {
-			super(categoryID, tiles);
+		constructor({ categoryID = 1, tiles = null }) {
+			super({ categoryID, tiles });
 		}
 
 		addChild(tile, matrix) {
@@ -448,8 +448,8 @@
 			return this.#points;
 		}
 
-		constructor(categoryID, strict = false, tiles = null) {
-			super(categoryID, tiles);
+		constructor({ categoryID = 1, strict = false, tiles = null } ) {
+			super({ categoryID, tiles });
 			this.#strict = strict;
 		}
 
@@ -490,15 +490,15 @@
 
 		#children;
 
-		constructor(strict = false, tiles = null) {
+		constructor({ strict = false, tiles = null }) {
 
-			super(0, tiles);
+			super({ categoryID: 0, tiles });
 
-			this.#children = Mystic.#rulesChild.map(child => {
+			this.#children = Mystic.#rulesChild.map(({ categoryID, pointIndex, angle }) => {
 
-				const tile = new Spectre(child.categoryID, strict);
-				const { x, y } = Spectre.points[child.pointIndex];
-				const matrix = Matrix.IDENTITY.translate(x, y).rotate(child.angle);
+				const tile = new Spectre({ categoryID, strict });
+				const { x, y } = Spectre.points[pointIndex];
+				const matrix = Matrix.IDENTITY.translate(x, y).rotate(angle);
 
 				return { tile, matrix };
 
@@ -556,8 +556,8 @@
 			return this.#points;
 		}
 
-		constructor(categoryID, tiles = null) {
-			super(categoryID, tiles);
+		constructor({ categoryID = 1, tiles = null }) {
+			super({ categoryID, tiles });
 		}
 
 		render(renderer, matrix) {
@@ -631,9 +631,9 @@
 
 			const tiles = new Tiles(Spectre.keyPoints);
 
-			tiles.set(0, new Mystic(strict, tiles));
+			tiles.set(0, new Mystic({ strict, tiles }));
 			for (let categoryID = 1; categoryID < Tiles.length; categoryID++) {
-				tiles.set(categoryID, new Spectre(categoryID, strict, tiles));
+				tiles.set(categoryID, new Spectre({ categoryID, strict, tiles }));
 			}
 
 			return new Tiling(tiles);
@@ -645,7 +645,7 @@
 			const tiles = new Tiles(Hexagon.keyPoints);
 
 			for (let categoryID = 0; categoryID < Tiles.length; categoryID++) {
-				tiles.set(categoryID, new Hexagon(categoryID, tiles));
+				tiles.set(categoryID, new Hexagon({ categoryID, tiles }));
 			}
 
 			return new Tiling(tiles);
@@ -731,7 +731,7 @@
 			const ruleChildCategory = Tiling.#rulesChildCategory[categoryID];
 
 			// 
-			const supertile = new Supertile(categoryID, tiles);
+			const supertile = new Supertile({ categoryID, tiles });
 
 			for (const [childIndex, categoryIDChild] of ruleChildCategory.entries()) {
 				if ( categoryIDChild >= 0 ) {
