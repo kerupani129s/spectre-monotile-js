@@ -48,7 +48,7 @@ clear()
 render(tile, matrix = Matrix.IDENTITY)
 
 renderKeyPoints(tile, matrix = Matrix.IDENTITY)
-renderChildKeyPoints(tile, matrix = Matrix.IDENTITY)
+renderChildKeyPoints(supertile, matrix = Matrix.IDENTITY)
 
 renderCategoryName(tile, matrix = Matrix.IDENTITY)
 renderChildCategoryNames(supertile, matrix = Matrix.IDENTITY)

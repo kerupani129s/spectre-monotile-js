@@ -105,8 +105,8 @@
 			tile.renderKeyPoints(this, this.matrix.multiply(matrix));
 		}
 
-		renderChildKeyPoints(tile, matrix = Matrix.IDENTITY) {
-			tile.renderChildKeyPoints(this, this.matrix.multiply(matrix));
+		renderChildKeyPoints(supertile, matrix = Matrix.IDENTITY) {
+			supertile.renderChildKeyPoints(this, this.matrix.multiply(matrix));
 		}
 
 		renderCategoryName(tile, matrix = Matrix.IDENTITY) {
