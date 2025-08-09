@@ -215,18 +215,10 @@
 		// 変換行列: (0, 0) と (1, 0) を入れ替えるような 180 度回転
 		static #matrixReversing = new DOMMatrixReadOnly([-1, 0, 0, -1, 1, 0]);
 
-		static #controlPoints;
-
-		static {
-
-			const controlPoints = [
-				{ x: 1 / 3, y: 0.5 },
-				{ x: 1 - 1 / 3, y: 0.5 },
-			].map(point => DOMPointReadOnly.fromPoint(point));
-
-			this.#controlPoints = controlPoints;
-
-		}
+		static #controlPoints = [
+			{ x: 1 / 3, y: 0.5 },
+			{ x: 1 - 1 / 3, y: 0.5 },
+		].map(point => DOMPointReadOnly.fromPoint(point));
 
 		constructor() {
 
@@ -425,43 +417,28 @@
 
 	const Spectre = class extends Tile {
 
-		static #points;
-		static #keyPointIndices;
+		static #points = [
+			{ x: 0.0, y: 0.0 },
+			{ x: 1.0, y: 0.0 },
+			{ x: 1.5, y: 0.0 - Math.sqrt(3) / 2 },
+			{ x: 1.5 + Math.sqrt(3) / 2, y: 0.5 - Math.sqrt(3) / 2 },
+			{ x: 1.5 + Math.sqrt(3) / 2, y: 1.5 - Math.sqrt(3) / 2 },
+			{ x: 2.5 + Math.sqrt(3) / 2, y: 1.5 - Math.sqrt(3) / 2 },
+			{ x: 3.0 + Math.sqrt(3) / 2, y: 1.5 },
+			{ x: 3.0, y: 2.0 },
+			{ x: 3.0 - Math.sqrt(3) / 2, y: 1.5 },
+			{ x: 2.5 - Math.sqrt(3) / 2, y: 1.5 + Math.sqrt(3) / 2 },
+			{ x: 1.5 - Math.sqrt(3) / 2, y: 1.5 + Math.sqrt(3) / 2 },
+			{ x: 0.5 - Math.sqrt(3) / 2, y: 1.5 + Math.sqrt(3) / 2 },
+			{ x: 0.0 - Math.sqrt(3) / 2, y: 1.5 },
+			{ x: 0.0, y: 1.0 },
+		].map(point => DOMPointReadOnly.fromPoint(point));
 
-		static #categoryNamePosition;
+		static #keyPointIndices = [3, 5, 7, 11];
+
+		static #categoryNamePosition = { x: 1.15, y: 1.1 };
 
 		#path;
-
-		static {
-
-			const points = [
-				{ x: 0.0, y: 0.0 },
-				{ x: 1.0, y: 0.0 },
-				{ x: 1.5, y: 0.0 - Math.sqrt(3) / 2 },
-				{ x: 1.5 + Math.sqrt(3) / 2, y: 0.5 - Math.sqrt(3) / 2 },
-				{ x: 1.5 + Math.sqrt(3) / 2, y: 1.5 - Math.sqrt(3) / 2 },
-				{ x: 2.5 + Math.sqrt(3) / 2, y: 1.5 - Math.sqrt(3) / 2 },
-				{ x: 3.0 + Math.sqrt(3) / 2, y: 1.5 },
-				{ x: 3.0, y: 2.0 },
-				{ x: 3.0 - Math.sqrt(3) / 2, y: 1.5 },
-				{ x: 2.5 - Math.sqrt(3) / 2, y: 1.5 + Math.sqrt(3) / 2 },
-				{ x: 1.5 - Math.sqrt(3) / 2, y: 1.5 + Math.sqrt(3) / 2 },
-				{ x: 0.5 - Math.sqrt(3) / 2, y: 1.5 + Math.sqrt(3) / 2 },
-				{ x: 0.0 - Math.sqrt(3) / 2, y: 1.5 },
-				{ x: 0.0, y: 1.0 },
-			].map(point => DOMPointReadOnly.fromPoint(point));
-
-			const keyPointIndices = [3, 5, 7, 11];
-
-			const categoryNamePosition = { x: 1.15, y: 1.1 };
-
-			// 
-			this.#points = points;
-			this.#keyPointIndices = keyPointIndices;
-
-			this.#categoryNamePosition = categoryNamePosition;
-
-		}
 
 		static get keyPoints() {
 			return this.#keyPointIndices.map(i => this.#points[i]);
@@ -554,37 +531,20 @@
 
 	const Hexagon = class extends Tile {
 
-		static #points;
-		static #keyPointIndices;
+		static #points = [
+			{ x: 0.0, y: 0.0 },
+			{ x: 1.0, y: 0.0 },
+			{ x: 1.5, y: 0.0 + Math.sqrt(3) / 2 },
+			{ x: 1.0, y: 0.0 + Math.sqrt(3) },
+			{ x: 0.0, y: 0.0 + Math.sqrt(3) },
+			{ x: -0.5, y: 0.0 + Math.sqrt(3) / 2 },
+		].map(point => DOMPointReadOnly.fromPoint(point));
 
-		static #path;
-		static #categoryNamePosition;
+		static #keyPointIndices = [1, 2, 3, 5];
 
-		static {
+		static #path = EdgeShape.LINE.generatePath(this.#points);
 
-			const points = [
-				{ x: 0.0, y: 0.0 },
-				{ x: 1.0, y: 0.0 },
-				{ x: 1.5, y: 0.0 + Math.sqrt(3) / 2 },
-				{ x: 1.0, y: 0.0 + Math.sqrt(3) },
-				{ x: 0.0, y: 0.0 + Math.sqrt(3) },
-				{ x: -0.5, y: 0.0 + Math.sqrt(3) / 2 },
-			].map(point => DOMPointReadOnly.fromPoint(point));
-
-			const keyPointIndices = [1, 2, 3, 5];
-
-			const path = EdgeShape.LINE.generatePath(points);
-
-			const categoryNamePosition = { x: 0.5, y: Math.sqrt(3) / 2 };
-
-			// 
-			this.#points = points;
-			this.#keyPointIndices = keyPointIndices;
-
-			this.#path = path;
-			this.#categoryNamePosition = categoryNamePosition;
-
-		}
+		static #categoryNamePosition = { x: 0.5, y: Math.sqrt(3) / 2 };
 
 		static get keyPoints() {
 			return this.#keyPointIndices.map(i => this.#points[i]);
