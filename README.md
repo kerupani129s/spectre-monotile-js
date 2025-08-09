@@ -13,7 +13,7 @@
 ```
 
 ```javascript
-const { Matrix, Renderer, Tiling } = Monotile;
+const { Matrix, Renderer, EdgeShape, Tiling } = Monotile;
 
 // 
 const renderer = new Renderer();
@@ -27,7 +27,7 @@ renderer.init({
 document.body.appendChild(renderer.canvas);
 
 // 
-const tile = Tiling.createSpectres(true).substitute().get(1);
+const tile = Tiling.createSpectres(EdgeShape.BEZIER_CURVE).substitute().get(1);
 
 renderer.render(tile);
 renderer.renderChildKeyPoints(tile);
