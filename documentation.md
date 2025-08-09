@@ -26,7 +26,6 @@ radiusKeyPoint
 
 noFill
 noStrokeQuad
-noRenderCategoryName
 
 get canvas()
 
@@ -42,7 +41,6 @@ init({
 	radiusKeyPoint = 5,
 	noFill = false,
 	noStrokeQuad = false,
-	noRenderCategoryName = true,
 } = {})
 
 clear()
@@ -50,8 +48,11 @@ clear()
 render(tile, matrix = Matrix.IDENTITY)
 
 renderKeyPoints(tile, matrix = Matrix.IDENTITY)
-
 renderChildKeyPoints(tile, matrix = Matrix.IDENTITY)
+
+renderCategoryName(tile, matrix = Matrix.IDENTITY)
+renderChildCategoryNames(supertile, matrix = Matrix.IDENTITY)
+renderCategoryNames(tile, matrix = Matrix.IDENTITY)
 
 async extractImage({ type, quality } = {})
 ```

@@ -46,7 +46,6 @@
 
 		noFill;
 		noStrokeQuad;
-		noRenderCategoryName;
 
 		get canvas() {
 			return this.#canvas;
@@ -68,7 +67,6 @@
 			radiusKeyPoint = 5,
 			noFill = false,
 			noStrokeQuad = false,
-			noRenderCategoryName = true,
 		} = {}) {
 
 			const canvas = document.createElement('canvas');
@@ -92,7 +90,6 @@
 
 			this.noFill = noFill;
 			this.noStrokeQuad = noStrokeQuad;
-			this.noRenderCategoryName = noRenderCategoryName;
 
 		}
 
@@ -110,6 +107,18 @@
 
 		renderChildKeyPoints(tile, matrix = Matrix.IDENTITY) {
 			tile.renderChildKeyPoints(this, this.matrix.multiply(matrix));
+		}
+
+		renderCategoryName(tile, matrix = Matrix.IDENTITY) {
+			tile.renderCategoryName(this, this.matrix.multiply(matrix));
+		}
+
+		renderChildCategoryNames(supertile, matrix = Matrix.IDENTITY) {
+			supertile.renderChildCategoryNames(this, this.matrix.multiply(matrix));
+		}
+
+		renderCategoryNames(tile, matrix = Matrix.IDENTITY) {
+			tile.renderCategoryNames(this, this.matrix.multiply(matrix));
 		}
 
 		async extractImage({ type, quality } = {}) {
@@ -322,7 +331,6 @@
 
 		renderCategoryName(renderer, matrix) {
 
-			// TODO: Supertile で描画したい場合、大きさと位置を変更
 			const fontSize = Matrix.extractScale(matrix).y;
 			const { x, y } = matrix.transformPoint(new DOMPointReadOnly());
 
@@ -330,6 +338,10 @@
 			renderer.context.font = `${fontSize}px serif`;
 			renderer.context.fillText(this.categoryName, x, y);
 
+		}
+
+		renderCategoryNames(renderer, matrix) {
+			this.renderCategoryName(renderer, matrix);
 		}
 
 		// TODO: getBounds(matrix)
@@ -388,6 +400,24 @@
 		renderChildKeyPoints(renderer, matrix) {
 			for (const child of this.#children) {
 				child.tile.renderKeyPoints(renderer, matrix.multiply(child.matrix));
+			}
+		}
+
+		renderCategoryName(renderer, matrix) {
+			// TODO: 大きさと位置を変更
+			const { x, y } = { x: 1.15, y: 1.1 };
+			super.renderCategoryName(renderer, matrix.translate(x, y));
+		}
+
+		renderChildCategoryNames(renderer, matrix) {
+			for (const child of this.#children) {
+				child.tile.renderCategoryName(renderer, matrix.multiply(child.matrix));
+			}
+		}
+
+		renderCategoryNames(renderer, matrix) {
+			for (const child of this.#children) {
+				child.tile.renderCategoryNames(renderer, matrix.multiply(child.matrix));
 			}
 		}
 
@@ -465,11 +495,11 @@
 			}
 			renderer.context.stroke(path);
 
-			if ( ! renderer.noRenderCategoryName ) {
-				const { x, y } = Spectre.#categoryNamePosition;
-				this.renderCategoryName(renderer, matrix.translate(x, y));
-			}
+		}
 
+		renderCategoryName(renderer, matrix) {
+			const { x, y } = Spectre.#categoryNamePosition;
+			super.renderCategoryName(renderer, matrix.translate(x, y));
 		}
 
 	};
@@ -480,6 +510,8 @@
 			{ categoryID: 9, pointIndex: 0, angle: 0 },
 			{ categoryID: 10, pointIndex: 8, angle: 30 },
 		];
+
+		static #categoryNamePosition = { x: 2.15, y: 2.15 };
 
 		#children;
 
@@ -504,6 +536,17 @@
 		render(renderer, matrix) {
 			for (const child of this.#children) {
 				child.tile.render(renderer, matrix.multiply(child.matrix));
+			}
+		}
+
+		renderCategoryName(renderer, matrix) {
+			const { x, y } = Mystic.#categoryNamePosition;
+			super.renderCategoryName(renderer, matrix.translate(x, y));
+		}
+
+		renderCategoryNames(renderer, matrix) {
+			for (const child of this.#children) {
+				child.tile.renderCategoryNames(renderer, matrix.multiply(child.matrix));
 			}
 		}
 
@@ -572,11 +615,11 @@
 			}
 			renderer.context.stroke(path);
 
-			if ( ! renderer.noRenderCategoryName ) {
-				const { x, y } = Hexagon.#categoryNamePosition;
-				this.renderCategoryName(renderer, matrix.translate(x, y));
-			}
+		}
 
+		renderCategoryName(renderer, matrix) {
+			const { x, y } = Hexagon.#categoryNamePosition;
+			super.renderCategoryName(renderer, matrix.translate(x, y));
 		}
 
 	};
