@@ -20,8 +20,6 @@ static extractScale(matrix)
 ```javascript
 context
 
-matrix
-
 radiusKeyPoint
 
 noFill
@@ -32,6 +30,9 @@ get canvas()
 get width()
 
 get height()
+
+set matrix(matrix)
+get matrix()
 
 init({
 	width = 300,

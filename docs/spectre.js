@@ -40,9 +40,10 @@
 		#canvas;
 		context;
 
-		matrix;
+		#matrix;
 
 		radiusKeyPoint;
+		#fontSizeBase;
 
 		noFill;
 		noStrokeQuad;
@@ -57,6 +58,19 @@
 
 		get height() {
 			return this.#canvas.height;
+		}
+
+		set matrix(matrix) {
+			this.#matrix = matrix;
+			this.#fontSizeBase = Matrix.extractScale(matrix).y;
+		}
+
+		get matrix() {
+			return this.#matrix;
+		}
+
+		get fontSizeBase() {
+			return this.#fontSizeBase;
 		}
 
 		init({
@@ -323,12 +337,27 @@
 
 		renderCategoryName(renderer, matrix) {
 
-			const fontSize = Matrix.extractScale(matrix).y;
+			// 
+			const fontSize = renderer.fontSizeBase;
+
+			renderer.context.font = `${fontSize}px serif`;
+			renderer.context.fillStyle = '#000000';
+
+			// 
+			const categoryName = Tile.#categoryNames[this.#categoryID];
+
 			const { x, y } = matrix.transformPoint(new DOMPointReadOnly());
 
-			renderer.context.fillStyle = '#000000';
-			renderer.context.font = `${fontSize}px serif`;
-			renderer.context.fillText(this.categoryName, x, y);
+			const {
+				actualBoundingBoxAscent,
+				actualBoundingBoxDescent,
+			} = renderer.context.measureText(categoryName);
+
+			renderer.context.fillText(
+				categoryName,
+				x,
+				y + (actualBoundingBoxAscent - actualBoundingBoxDescent) / 2,
+			);
 
 		}
 
