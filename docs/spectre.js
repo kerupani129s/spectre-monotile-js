@@ -283,9 +283,19 @@
 		#categoryID;
 		#tiles;
 
-		constructor({ categoryID = 1, tiles = null }) {
+		#categoryNamePoint;
+		#categoryNameScale;
+
+		constructor({
+			categoryID = 1,
+			tiles = null,
+			categoryNamePoint = new DOMPointReadOnly(),
+			categoryNameScale = 1,
+		}) {
 			this.#categoryID = categoryID;
 			this.#tiles = tiles;
+			this.#categoryNamePoint = categoryNamePoint;
+			this.#categoryNameScale = categoryNameScale;
 		}
 
 		get categoryID() {
@@ -338,7 +348,7 @@
 		renderCategoryName(renderer, matrix) {
 
 			// 
-			const fontSize = renderer.fontSizeBase;
+			const fontSize = this.#categoryNameScale * renderer.fontSizeBase;
 
 			renderer.context.font = `${fontSize}px serif`;
 			renderer.context.fillStyle = '#000000';
@@ -346,7 +356,7 @@
 			// 
 			const categoryName = Tile.#categoryNames[this.#categoryID];
 
-			const { x, y } = matrix.transformPoint(new DOMPointReadOnly());
+			const { x, y } = matrix.transformPoint(this.#categoryNamePoint);
 
 			const {
 				actualBoundingBoxAscent,
@@ -405,7 +415,9 @@
 		#children = [];
 
 		constructor({ categoryID = 1, tiles = null }) {
-			super({ categoryID, tiles });
+			// TODO: 大きさと位置を変更
+			const categoryNamePoint = new DOMPointReadOnly(1.1, 1.1);
+			super({ categoryID, tiles, categoryNamePoint });
 		}
 
 		addChild(tile, matrix) {
@@ -422,12 +434,6 @@
 			for (const child of this.#children) {
 				child.tile.renderKeyPoints(renderer, matrix.multiply(child.matrix));
 			}
-		}
-
-		renderCategoryName(renderer, matrix) {
-			// TODO: 大きさと位置を変更
-			const { x, y } = { x: 1.1, y: 1.1 };
-			super.renderCategoryName(renderer, matrix.translate(x, y));
 		}
 
 		renderChildCategoryNames(renderer, matrix) {
@@ -465,8 +471,6 @@
 
 		static #keyPointIndices = [3, 5, 7, 11];
 
-		static #categoryNamePosition = { x: 1.1, y: 1.1 };
-
 		#path;
 
 		static get keyPoints() {
@@ -478,7 +482,8 @@
 		}
 
 		constructor({ categoryID = 1, edgeShape = EdgeShape.LINE, path = null, tiles = null }) {
-			super({ categoryID, tiles });
+			const categoryNamePoint = new DOMPointReadOnly(1.1, 1.1);
+			super({ categoryID, tiles, categoryNamePoint });
 			this.#path = path ?? edgeShape.generatePath(Spectre.points);
 		}
 
@@ -503,11 +508,6 @@
 
 		}
 
-		renderCategoryName(renderer, matrix) {
-			const { x, y } = Spectre.#categoryNamePosition;
-			super.renderCategoryName(renderer, matrix.translate(x, y));
-		}
-
 	};
 
 	const Mystic = class extends Tile {
@@ -517,13 +517,12 @@
 			{ categoryID: 10, pointIndex: 8, angle: 30 },
 		];
 
-		static #categoryNamePosition = { x: 2.15, y: 2.15 };
-
 		#children;
 
 		constructor({ edgeShape = EdgeShape.LINE, path = null, tiles = null }) {
 
-			super({ categoryID: 0, tiles });
+			const categoryNamePoint = new DOMPointReadOnly(2.15, 2.15);
+			super({ categoryID: 0, tiles, categoryNamePoint });
 
 			const pathChild = path ?? edgeShape.generatePath(Spectre.points);
 
@@ -543,11 +542,6 @@
 			for (const child of this.#children) {
 				child.tile.render(renderer, matrix.multiply(child.matrix));
 			}
-		}
-
-		renderCategoryName(renderer, matrix) {
-			const { x, y } = Mystic.#categoryNamePosition;
-			super.renderCategoryName(renderer, matrix.translate(x, y));
 		}
 
 		renderCategoryNames(renderer, matrix) {
@@ -573,8 +567,6 @@
 
 		static #path = EdgeShape.LINE.generatePath(this.#points);
 
-		static #categoryNamePosition = { x: 0.5, y: Math.sqrt(3) / 2 };
-
 		static get keyPoints() {
 			return this.#keyPointIndices.map(i => this.#points[i]);
 		}
@@ -584,7 +576,8 @@
 		}
 
 		constructor({ categoryID = 1, tiles = null }) {
-			super({ categoryID, tiles });
+			const categoryNamePoint = new DOMPointReadOnly(0.5, Math.sqrt(3) / 2);
+			super({ categoryID, tiles, categoryNamePoint });
 		}
 
 		render(renderer, matrix) {
@@ -604,11 +597,6 @@
 			}
 			renderer.context.stroke(path);
 
-		}
-
-		renderCategoryName(renderer, matrix) {
-			const { x, y } = Hexagon.#categoryNamePosition;
-			super.renderCategoryName(renderer, matrix.translate(x, y));
 		}
 
 	};
