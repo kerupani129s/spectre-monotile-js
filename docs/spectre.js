@@ -426,7 +426,7 @@
 
 		renderCategoryName(renderer, matrix) {
 			// TODO: 大きさと位置を変更
-			const { x, y } = { x: 1.15, y: 1.1 };
+			const { x, y } = { x: 1.1, y: 1.1 };
 			super.renderCategoryName(renderer, matrix.translate(x, y));
 		}
 
@@ -465,7 +465,7 @@
 
 		static #keyPointIndices = [3, 5, 7, 11];
 
-		static #categoryNamePosition = { x: 1.15, y: 1.1 };
+		static #categoryNamePosition = { x: 1.1, y: 1.1 };
 
 		#path;
 
