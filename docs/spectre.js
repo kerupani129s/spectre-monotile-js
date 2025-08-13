@@ -18,6 +18,10 @@
 			return this.#flipping;
 		}
 
+		static extractPosition(matrix) {
+			return { x: matrix.e, y: matrix.f };
+		}
+
 		static extractScale(matrix) {
 
 			// [c, s, - s, c, 0, 0] [x, 0, 0, y, 0, 0] = [c x, s x, - s y, c y, 0, 0]
@@ -414,9 +418,12 @@
 
 		#children = [];
 
-		constructor({ categoryID = 1, tiles = null }) {
-			// TODO: 大きさと位置を変更
-			const categoryNamePoint = new DOMPointReadOnly(1.1, 1.1);
+		constructor({
+			categoryID = 1,
+			tiles = null,
+			categoryNamePoint = new DOMPointReadOnly(),
+		}) {
+			// TODO: カテゴリ名の大きさを変更
 			super({ categoryID, tiles, categoryNamePoint });
 		}
 
@@ -744,12 +751,32 @@
 
 		}
 
+		#generateSupertileCategoryNamePoint(matricesChild) {
+
+			const points = Tiling.#rulesChildMatrix
+				.map(({ sharedKeyPointIndices }, childIndex) => {
+
+					const matrixChild = matricesChild[childIndex];
+					const keyPointChild = this.#tiles.keyPoints[sharedKeyPointIndices[0]];
+
+					return matrixChild.transformPoint(keyPointChild);
+
+				});
+
+			const x = points.reduce((sum, { x }) => sum + x, 0) / points.length;
+			const y = points.reduce((sum, { y }) => sum + y, 0) / points.length;
+
+			return new DOMPointReadOnly(x, y);
+
+		}
+
 		#createSupertile(categoryID, matricesChild, tiles) {
 
 			const ruleChildCategory = Tiling.#rulesChildCategory[categoryID];
 
 			// 
-			const supertile = new Supertile({ categoryID, tiles });
+			const categoryNamePoint = this.#generateSupertileCategoryNamePoint(matricesChild);
+			const supertile = new Supertile({ categoryID, tiles, categoryNamePoint });
 
 			for (const [childIndex, categoryIDChild] of ruleChildCategory.entries()) {
 				if ( categoryIDChild >= 0 ) {
