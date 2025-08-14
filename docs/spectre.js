@@ -288,18 +288,15 @@
 		#tiles;
 
 		#categoryNamePoint;
-		#categoryNameScale;
 
 		constructor({
 			categoryID = 1,
 			tiles = null,
 			categoryNamePoint = new DOMPointReadOnly(),
-			categoryNameScale = 1,
 		}) {
 			this.#categoryID = categoryID;
 			this.#tiles = tiles;
 			this.#categoryNamePoint = categoryNamePoint;
-			this.#categoryNameScale = categoryNameScale;
 		}
 
 		get categoryID() {
@@ -352,7 +349,7 @@
 		renderCategoryName(renderer, matrix) {
 
 			// 
-			const fontSize = this.#categoryNameScale * renderer.fontSizeBase;
+			const fontSize = this.#tiles.categoryNameScale * renderer.fontSizeBase;
 
 			renderer.context.font = `${fontSize}px serif`;
 			renderer.context.fillStyle = '#000000';
@@ -392,6 +389,8 @@
 
 		#keyPoints;
 
+		#categoryNameScale;
+
 		static get length() {
 			return this.#length;
 		}
@@ -400,8 +399,13 @@
 			return this.#keyPoints;
 		}
 
-		constructor(keyPoints) {
+		get categoryNameScale() {
+			return this.#categoryNameScale;
+		}
+
+		constructor(keyPoints, categoryNameScale) {
 			this.#keyPoints = keyPoints;
+			this.#categoryNameScale = categoryNameScale;
 		}
 
 		set(categoryID, tile) {
@@ -423,7 +427,6 @@
 			tiles = null,
 			categoryNamePoint = new DOMPointReadOnly(),
 		}) {
-			// TODO: カテゴリ名の大きさを変更
 			super({ categoryID, tiles, categoryNamePoint });
 		}
 
@@ -654,7 +657,7 @@
 			const path = edgeShape.generatePath(Spectre.points);
 
 			// 
-			const tiles = new Tiles(Spectre.keyPoints);
+			const tiles = new Tiles(Spectre.keyPoints, 1);
 
 			tiles.set(0, new Mystic({ path, tiles }));
 			for (let categoryID = 1; categoryID < Tiles.length; categoryID++) {
@@ -667,7 +670,7 @@
 
 		static createHexagons() {
 
-			const tiles = new Tiles(Hexagon.keyPoints);
+			const tiles = new Tiles(Hexagon.keyPoints, 1);
 
 			for (let categoryID = 0; categoryID < Tiles.length; categoryID++) {
 				tiles.set(categoryID, new Hexagon({ categoryID, tiles }));
@@ -675,6 +678,15 @@
 
 			return new Tiling(tiles);
 
+		}
+
+		static #areaOfQuad(points) {
+			return Math.abs(
+				points[0].x * points[1].y - points[1].x * points[0].y +
+				points[1].x * points[2].y - points[2].x * points[1].y +
+				points[2].x * points[3].y - points[3].x * points[2].y +
+				points[3].x * points[0].y - points[0].x * points[3].y
+			) / 2;
 		}
 
 		constructor(tiles) {
@@ -770,6 +782,15 @@
 
 		}
 
+		#generateSupertileCategoryNameScale(keyPoints) {
+
+			const areaChild = Tiling.#areaOfQuad(this.#tiles.keyPoints);
+			const area = Tiling.#areaOfQuad(keyPoints);
+
+			return Math.sqrt(area / areaChild) * this.#tiles.categoryNameScale;
+
+		}
+
 		#createSupertile(categoryID, matricesChild, tiles) {
 
 			const ruleChildCategory = Tiling.#rulesChildCategory[categoryID];
@@ -793,9 +814,10 @@
 			const matricesChild = this.#generateChildMatrices();
 
 			const keyPoints = this.#generateKeyPoints(matricesChild);
+			const categoryNameScale = this.#generateSupertileCategoryNameScale(keyPoints);
 
 			// 
-			const tiles = new Tiles(keyPoints);
+			const tiles = new Tiles(keyPoints, categoryNameScale);
 
 			for (let categoryID = 0; categoryID < Tiles.length; categoryID++) {
 				tiles.set(
