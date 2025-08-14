@@ -289,6 +289,14 @@
 
 		#categoryNamePoint;
 
+		get categoryID() {
+			return this.#categoryID;
+		}
+
+		get categoryName() {
+			return Tile.#categoryNames[this.#categoryID];
+		}
+
 		constructor({
 			categoryID = 1,
 			tiles = null,
@@ -297,14 +305,6 @@
 			this.#categoryID = categoryID;
 			this.#tiles = tiles;
 			this.#categoryNamePoint = categoryNamePoint;
-		}
-
-		get categoryID() {
-			return this.#categoryID;
-		}
-
-		get categoryName() {
-			return Tile.#categoryNames[this.#categoryID];
 		}
 
 		render(renderer, matrix) {}
