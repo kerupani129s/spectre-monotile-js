@@ -285,7 +285,7 @@
 		static #categoryNames = ['Γ', 'Δ', 'Θ', 'Λ', 'Ξ', 'Π', 'Σ', 'Φ', 'Ψ', 'Γ₁', 'Γ₂'];
 
 		#categoryID;
-		#tiles;
+		#tileMap;
 
 		#categoryNamePoint;
 
@@ -299,11 +299,11 @@
 
 		constructor({
 			categoryID = 1,
-			tiles = null,
+			tileMap = null,
 			categoryNamePoint = new DOMPointReadOnly(),
 		}) {
 			this.#categoryID = categoryID;
-			this.#tiles = tiles;
+			this.#tileMap = tileMap;
 			this.#categoryNamePoint = categoryNamePoint;
 		}
 
@@ -326,7 +326,7 @@
 			}
 
 			// 
-			const points = this.#tiles.keyPoints.map(point => matrix.transformPoint(point));
+			const points = this.#tileMap.keyPoints.map(point => matrix.transformPoint(point));
 
 			if ( ! renderer.noStrokeQuad ) {
 				const pathQuad = new Path2D();
@@ -349,7 +349,7 @@
 		renderCategoryName(renderer, matrix) {
 
 			// 
-			const fontSize = this.#tiles.categoryNameScale * renderer.fontSizeBase;
+			const fontSize = this.#tileMap.categoryNameScale * renderer.fontSizeBase;
 
 			renderer.context.font = `${fontSize}px serif`;
 			renderer.context.fillStyle = '#000000';
@@ -381,53 +381,16 @@
 
 	};
 
-	const Tiles = class {
-
-		static #length = 9;
-
-		#array = Array(Tiles.#length);
-
-		#keyPoints;
-
-		#categoryNameScale;
-
-		static get length() {
-			return this.#length;
-		}
-
-		get keyPoints() {
-			return this.#keyPoints;
-		}
-
-		get categoryNameScale() {
-			return this.#categoryNameScale;
-		}
-
-		constructor(keyPoints, categoryNameScale) {
-			this.#keyPoints = keyPoints;
-			this.#categoryNameScale = categoryNameScale;
-		}
-
-		set(categoryID, tile) {
-			this.#array[categoryID] = tile;
-		}
-
-		get(categoryID) {
-			return this.#array[categoryID];
-		}
-
-	};
-
 	const Supertile = class extends Tile {
 
 		#children = [];
 
 		constructor({
 			categoryID = 1,
-			tiles = null,
+			tileMap = null,
 			categoryNamePoint = new DOMPointReadOnly(),
 		}) {
-			super({ categoryID, tiles, categoryNamePoint });
+			super({ categoryID, tileMap, categoryNamePoint });
 		}
 
 		addChild(tile, matrix) {
@@ -491,9 +454,9 @@
 			return this.#points;
 		}
 
-		constructor({ categoryID = 1, edgeShape = EdgeShape.LINE, path = null, tiles = null }) {
+		constructor({ categoryID = 1, edgeShape = EdgeShape.LINE, path = null, tileMap = null }) {
 			const categoryNamePoint = new DOMPointReadOnly(1.1, 1.1);
-			super({ categoryID, tiles, categoryNamePoint });
+			super({ categoryID, tileMap, categoryNamePoint });
 			this.#path = path ?? edgeShape.generatePath(Spectre.points);
 		}
 
@@ -529,10 +492,10 @@
 
 		#children;
 
-		constructor({ edgeShape = EdgeShape.LINE, path = null, tiles = null }) {
+		constructor({ edgeShape = EdgeShape.LINE, path = null, tileMap = null }) {
 
 			const categoryNamePoint = new DOMPointReadOnly(2.15, 2.15);
-			super({ categoryID: 0, tiles, categoryNamePoint });
+			super({ categoryID: 0, tileMap, categoryNamePoint });
 
 			const pathChild = path ?? edgeShape.generatePath(Spectre.points);
 
@@ -585,9 +548,9 @@
 			return this.#points;
 		}
 
-		constructor({ categoryID = 1, tiles = null }) {
+		constructor({ categoryID = 1, tileMap = null }) {
 			const categoryNamePoint = new DOMPointReadOnly(0.5, Math.sqrt(3) / 2);
-			super({ categoryID, tiles, categoryNamePoint });
+			super({ categoryID, tileMap, categoryNamePoint });
 		}
 
 		render(renderer, matrix) {
@@ -614,6 +577,43 @@
 	// 
 	// タイル張り
 	// 
+	const TileMap = class {
+
+		static #length = 9;
+
+		#array = Array(TileMap.#length);
+
+		#keyPoints;
+
+		#categoryNameScale;
+
+		static get length() {
+			return this.#length;
+		}
+
+		get keyPoints() {
+			return this.#keyPoints;
+		}
+
+		get categoryNameScale() {
+			return this.#categoryNameScale;
+		}
+
+		constructor(keyPoints, categoryNameScale) {
+			this.#keyPoints = keyPoints;
+			this.#categoryNameScale = categoryNameScale;
+		}
+
+		add(tile) {
+			this.#array[tile.categoryID] = tile;
+		}
+
+		get(categoryID) {
+			return this.#array[categoryID];
+		}
+
+	};
+
 	const Tiling = class {
 
 		static #rulesChildMatrix = [
@@ -646,10 +646,10 @@
 			{ childIndex: 1, keyPointIndex: 1 },
 		];
 
-		#tiles;
+		#tileMap;
 
 		static get length() {
-			return Tiles.length;
+			return TileMap.length;
 		}
 
 		static createSpectres(edgeShape = EdgeShape.LINE) {
@@ -657,26 +657,26 @@
 			const path = edgeShape.generatePath(Spectre.points);
 
 			// 
-			const tiles = new Tiles(Spectre.keyPoints, 1);
+			const tileMap = new TileMap(Spectre.keyPoints, 1);
 
-			tiles.set(0, new Mystic({ path, tiles }));
-			for (let categoryID = 1; categoryID < Tiles.length; categoryID++) {
-				tiles.set(categoryID, new Spectre({ categoryID, path, tiles }));
+			tileMap.add(new Mystic({ path, tileMap }));
+			for (let categoryID = 1; categoryID < TileMap.length; categoryID++) {
+				tileMap.add(new Spectre({ categoryID, path, tileMap }));
 			}
 
-			return new Tiling(tiles);
+			return new Tiling(tileMap);
 
 		}
 
 		static createHexagons() {
 
-			const tiles = new Tiles(Hexagon.keyPoints, 1);
+			const tileMap = new TileMap(Hexagon.keyPoints, 1);
 
-			for (let categoryID = 0; categoryID < Tiles.length; categoryID++) {
-				tiles.set(categoryID, new Hexagon({ categoryID, tiles }));
+			for (let categoryID = 0; categoryID < TileMap.length; categoryID++) {
+				tileMap.add(new Hexagon({ categoryID, tileMap }));
 			}
 
-			return new Tiling(tiles);
+			return new Tiling(tileMap);
 
 		}
 
@@ -689,12 +689,12 @@
 			) / 2;
 		}
 
-		constructor(tiles) {
-			this.#tiles = tiles;
+		constructor(tileMap) {
+			this.#tileMap = tileMap;
 		}
 
 		get(categoryID) {
-			return this.#tiles.get(categoryID);
+			return this.#tileMap.get(categoryID);
 		}
 
 		#generateChildMatrices() {
@@ -703,7 +703,7 @@
 			const rulesIterator = Tiling.#rulesChildMatrix.values()
 				.map(({ sharedKeyPointIndices, angle }) => ({
 					matrixRotation: Matrix.IDENTITY.rotate(angle),
-					sharedKeyPoints: sharedKeyPointIndices.map(i => this.#tiles.keyPoints[i]),
+					sharedKeyPoints: sharedKeyPointIndices.map(i => this.#tileMap.keyPoints[i]),
 				}));
 
 			// メモ: array.values() の場合は take(1) を配列に変換すると done にならない
@@ -755,7 +755,7 @@
 			return Tiling.#rulesKeyPoint.map(({ childIndex, keyPointIndex }) => {
 
 				const matrixChild = matricesChild[childIndex];
-				const keyPointChild = this.#tiles.keyPoints[keyPointIndex];
+				const keyPointChild = this.#tileMap.keyPoints[keyPointIndex];
 
 				return matrixChild.transformPoint(keyPointChild);
 
@@ -769,7 +769,7 @@
 				.map(({ sharedKeyPointIndices }, childIndex) => {
 
 					const matrixChild = matricesChild[childIndex];
-					const keyPointChild = this.#tiles.keyPoints[sharedKeyPointIndices[0]];
+					const keyPointChild = this.#tileMap.keyPoints[sharedKeyPointIndices[0]];
 
 					return matrixChild.transformPoint(keyPointChild);
 
@@ -784,24 +784,24 @@
 
 		#generateSupertileCategoryNameScale(keyPoints) {
 
-			const areaChild = Tiling.#areaOfQuad(this.#tiles.keyPoints);
+			const areaChild = Tiling.#areaOfQuad(this.#tileMap.keyPoints);
 			const area = Tiling.#areaOfQuad(keyPoints);
 
-			return Math.sqrt(area / areaChild) * this.#tiles.categoryNameScale;
+			return Math.sqrt(area / areaChild) * this.#tileMap.categoryNameScale;
 
 		}
 
-		#createSupertile(categoryID, matricesChild, tiles) {
+		#createSupertile(categoryID, matricesChild, tileMap) {
 
 			const ruleChildCategory = Tiling.#rulesChildCategory[categoryID];
 
 			// 
 			const categoryNamePoint = this.#generateSupertileCategoryNamePoint(matricesChild);
-			const supertile = new Supertile({ categoryID, tiles, categoryNamePoint });
+			const supertile = new Supertile({ categoryID, tileMap, categoryNamePoint });
 
 			for (const [childIndex, categoryIDChild] of ruleChildCategory.entries()) {
 				if ( categoryIDChild >= 0 ) {
-					supertile.addChild(this.#tiles.get(categoryIDChild), matricesChild[childIndex]);
+					supertile.addChild(this.#tileMap.get(categoryIDChild), matricesChild[childIndex]);
 				}
 			}
 
@@ -817,16 +817,13 @@
 			const categoryNameScale = this.#generateSupertileCategoryNameScale(keyPoints);
 
 			// 
-			const tiles = new Tiles(keyPoints, categoryNameScale);
+			const tileMap = new TileMap(keyPoints, categoryNameScale);
 
-			for (let categoryID = 0; categoryID < Tiles.length; categoryID++) {
-				tiles.set(
-					categoryID,
-					this.#createSupertile(categoryID, matricesChild, tiles)
-				);
+			for (let categoryID = 0; categoryID < TileMap.length; categoryID++) {
+				tileMap.add(this.#createSupertile(categoryID, matricesChild, tileMap));
 			}
 
-			return new Tiling(tiles);
+			return new Tiling(tileMap);
 
 		}
 
