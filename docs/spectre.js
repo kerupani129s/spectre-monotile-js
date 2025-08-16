@@ -298,10 +298,10 @@
 		}
 
 		constructor({
-			categoryID = 1,
+			categoryID = -1,
 			tileMap = null,
 			categoryNamePoint = new DOMPointReadOnly(),
-		}) {
+		} = {}) {
 			this.#categoryID = categoryID;
 			this.#tileMap = tileMap;
 			this.#categoryNamePoint = categoryNamePoint;
@@ -386,9 +386,9 @@
 		#children = [];
 
 		constructor({
-			categoryID = 1,
-			tileMap = null,
-			categoryNamePoint = new DOMPointReadOnly(),
+			categoryID,
+			tileMap,
+			categoryNamePoint,
 		}) {
 			super({ categoryID, tileMap, categoryNamePoint });
 		}
@@ -454,7 +454,7 @@
 			return this.#points;
 		}
 
-		constructor({ categoryID = 1, edgeShape = EdgeShape.LINE, path = null, tileMap = null }) {
+		constructor({ categoryID = -1, edgeShape = EdgeShape.LINE, path = null, tileMap = null } = {}) {
 			const categoryNamePoint = new DOMPointReadOnly(1.1, 1.1);
 			super({ categoryID, tileMap, categoryNamePoint });
 			this.#path = path ?? edgeShape.generatePath(Spectre.points);
@@ -492,16 +492,14 @@
 
 		#children;
 
-		constructor({ edgeShape = EdgeShape.LINE, path = null, tileMap = null }) {
+		constructor({ path, tileMap }) {
 
 			const categoryNamePoint = new DOMPointReadOnly(2.15, 2.15);
 			super({ categoryID: 0, tileMap, categoryNamePoint });
 
-			const pathChild = path ?? edgeShape.generatePath(Spectre.points);
-
 			this.#children = Mystic.#rulesChild.map(({ categoryID, pointIndex, angle }) => {
 
-				const tile = new Spectre({ categoryID, path: pathChild });
+				const tile = new Spectre({ categoryID, path });
 				const { x, y } = Spectre.points[pointIndex];
 				const matrix = Matrix.IDENTITY.translate(x, y).rotate(angle);
 
@@ -548,7 +546,7 @@
 			return this.#points;
 		}
 
-		constructor({ categoryID = 1, tileMap = null }) {
+		constructor({ categoryID = -1, tileMap = null } = {}) {
 			const categoryNamePoint = new DOMPointReadOnly(0.5, Math.sqrt(3) / 2);
 			super({ categoryID, tileMap, categoryNamePoint });
 		}

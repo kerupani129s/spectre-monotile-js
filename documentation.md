@@ -87,16 +87,12 @@ Inheritance: `Tile`
 ```javascript
 static get points()
 
-constructor({ categoryID = 1, edgeShape = EdgeShape.LINE })
+constructor({ categoryID = -1, edgeShape = EdgeShape.LINE })
 ```
 
 ### Mystic class
 
 Inheritance: `Tile`
-
-```javascript
-constructor({ edgeShape = EdgeShape.LINE })
-```
 
 ### Hexagon class
 
@@ -105,7 +101,7 @@ Inheritance: `Tile`
 ```javascript
 static get points()
 
-constructor({ categoryID = 1 })
+constructor({ categoryID = -1 })
 ```
 
 ## Tiling
