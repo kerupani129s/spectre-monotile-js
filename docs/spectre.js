@@ -789,15 +789,15 @@
 
 		#createSupertile(categoryID, keyPoints, categoryNameScale, matricesChild) {
 
-			const ruleChildCategory = Tiling.#rulesChildCategory[categoryID];
-
-			// 
 			const supertile = new Supertile({
 				categoryID,
 				keyPoints,
 				categoryNamePoint: this.#generateSupertileCategoryNamePoint(matricesChild),
 				categoryNameScale,
 			});
+
+			// 
+			const ruleChildCategory = Tiling.#rulesChildCategory[categoryID];
 
 			for (const [childIndex, categoryIDChild] of ruleChildCategory.entries()) {
 				if ( categoryIDChild >= 0 ) {
@@ -813,10 +813,10 @@
 
 			const matricesChild = this.#generateChildMatrices();
 
+			// 
 			const keyPoints = this.#generateKeyPoints(matricesChild);
 			const categoryNameScale = this.#generateSupertileCategoryNameScale(keyPoints);
 
-			// 
 			const tiling = new Tiling(keyPoints, categoryNameScale);
 
 			for (let categoryID = 0; categoryID < Tiling.#categoryCount; categoryID++) {
