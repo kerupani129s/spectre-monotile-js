@@ -34,6 +34,8 @@ get height()
 set matrix(matrix)
 get matrix()
 
+constructor()
+
 init({
 	width = 300,
 	height = 150,
@@ -87,7 +89,7 @@ Inheritance: `Tile`
 ```javascript
 static get points()
 
-constructor({ categoryID = -1, edgeShape = EdgeShape.LINE })
+constructor({ edgeShape = EdgeShape.LINE })
 ```
 
 ### Mystic class
@@ -101,7 +103,7 @@ Inheritance: `Tile`
 ```javascript
 static get points()
 
-constructor({ categoryID = -1 })
+constructor()
 ```
 
 ## Tiling
