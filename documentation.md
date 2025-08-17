@@ -111,7 +111,7 @@ constructor()
 ### Tiling class
 
 ```javascript
-static get length()
+static get categoryCount()
 
 static createSpectres(edgeShape = EdgeShape.LINE)
 static createHexagons()

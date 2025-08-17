@@ -583,44 +583,9 @@
 	// 
 	// タイル張り
 	// 
-	const TileMap = class {
-
-		static #length = 9;
-
-		#array = Array(TileMap.#length);
-
-		#keyPoints;
-
-		#categoryNameScale;
-
-		static get length() {
-			return this.#length;
-		}
-
-		get keyPoints() {
-			return this.#keyPoints;
-		}
-
-		get categoryNameScale() {
-			return this.#categoryNameScale;
-		}
-
-		constructor(keyPoints, categoryNameScale) {
-			this.#keyPoints = keyPoints;
-			this.#categoryNameScale = categoryNameScale;
-		}
-
-		add(tile) {
-			this.#array[tile.categoryID] = tile;
-		}
-
-		get(categoryID) {
-			return this.#array[categoryID];
-		}
-
-	};
-
 	const Tiling = class {
+
+		static #categoryCount = 9;
 
 		static #rulesChildMatrix = [
 			{ sharedKeyPointIndices: [3, 0], angle: 0 },
@@ -652,10 +617,14 @@
 			{ childIndex: 1, keyPointIndex: 1 },
 		];
 
-		#tileMap;
+		#tiles = Array(Tiling.#categoryCount);
 
-		static get length() {
-			return TileMap.length;
+		#keyPoints;
+
+		#categoryNameScale;
+
+		static get categoryCount() {
+			return Tiling.#categoryCount;
 		}
 
 		static createSpectres(edgeShape = EdgeShape.LINE) {
@@ -663,42 +632,42 @@
 			const path = edgeShape.generatePath(Spectre.points);
 
 			// 
-			const tileMap = new TileMap(Spectre.keyPoints, 1);
+			const tiling = new Tiling(Spectre.keyPoints, 1);
 
-			tileMap.add(new Mystic({
+			tiling.#add(new Mystic({
 				path,
-				keyPoints: tileMap.keyPoints,
+				keyPoints: tiling.#keyPoints,
 				categoryNamePoint: new DOMPointReadOnly(2.15, 2.15),
-				categoryNameScale: tileMap.categoryNameScale,
+				categoryNameScale: tiling.#categoryNameScale,
 			}));
-			for (let categoryID = 1; categoryID < TileMap.length; categoryID++) {
-				tileMap.add(new Spectre({
+			for (let categoryID = 1; categoryID < Tiling.#categoryCount; categoryID++) {
+				tiling.#add(new Spectre({
 					path,
 					categoryID,
-					keyPoints: tileMap.keyPoints,
+					keyPoints: tiling.#keyPoints,
 					categoryNamePoint: new DOMPointReadOnly(1.1, 1.1),
-					categoryNameScale: tileMap.categoryNameScale,
+					categoryNameScale: tiling.#categoryNameScale,
 				}));
 			}
 
-			return new Tiling(tileMap);
+			return tiling;
 
 		}
 
 		static createHexagons() {
 
-			const tileMap = new TileMap(Hexagon.keyPoints, 1);
+			const tiling = new Tiling(Hexagon.keyPoints, 1);
 
-			for (let categoryID = 0; categoryID < TileMap.length; categoryID++) {
-				tileMap.add(new Hexagon({
+			for (let categoryID = 0; categoryID < Tiling.#categoryCount; categoryID++) {
+				tiling.#add(new Hexagon({
 					categoryID,
-					keyPoints: tileMap.keyPoints,
+					keyPoints: tiling.#keyPoints,
 					categoryNamePoint: new DOMPointReadOnly(0.5, Math.sqrt(3) / 2),
-					categoryNameScale: tileMap.categoryNameScale,
+					categoryNameScale: tiling.#categoryNameScale,
 				}));
 			}
 
-			return new Tiling(tileMap);
+			return tiling;
 
 		}
 
@@ -711,12 +680,17 @@
 			) / 2;
 		}
 
-		constructor(tileMap) {
-			this.#tileMap = tileMap;
+		constructor(keyPoints, categoryNameScale) {
+			this.#keyPoints = keyPoints;
+			this.#categoryNameScale = categoryNameScale;
+		}
+
+		#add(tile) {
+			this.#tiles[tile.categoryID] = tile;
 		}
 
 		get(categoryID) {
-			return this.#tileMap.get(categoryID);
+			return this.#tiles[categoryID];
 		}
 
 		#generateChildMatrices() {
@@ -725,7 +699,7 @@
 			const rulesIterator = Tiling.#rulesChildMatrix.values()
 				.map(({ sharedKeyPointIndices, angle }) => ({
 					matrixRotation: Matrix.IDENTITY.rotate(angle),
-					sharedKeyPoints: sharedKeyPointIndices.map(i => this.#tileMap.keyPoints[i]),
+					sharedKeyPoints: sharedKeyPointIndices.map(i => this.#keyPoints[i]),
 				}));
 
 			// メモ: array.values() の場合は take(1) を配列に変換すると done にならない
@@ -777,7 +751,7 @@
 			return Tiling.#rulesKeyPoint.map(({ childIndex, keyPointIndex }) => {
 
 				const matrixChild = matricesChild[childIndex];
-				const keyPointChild = this.#tileMap.keyPoints[keyPointIndex];
+				const keyPointChild = this.#keyPoints[keyPointIndex];
 
 				return matrixChild.transformPoint(keyPointChild);
 
@@ -791,7 +765,7 @@
 				.map(({ sharedKeyPointIndices }, childIndex) => {
 
 					const matrixChild = matricesChild[childIndex];
-					const keyPointChild = this.#tileMap.keyPoints[sharedKeyPointIndices[0]];
+					const keyPointChild = this.#keyPoints[sharedKeyPointIndices[0]];
 
 					return matrixChild.transformPoint(keyPointChild);
 
@@ -806,28 +780,28 @@
 
 		#generateSupertileCategoryNameScale(keyPoints) {
 
-			const areaChild = Tiling.#areaOfQuad(this.#tileMap.keyPoints);
+			const areaChild = Tiling.#areaOfQuad(this.#keyPoints);
 			const area = Tiling.#areaOfQuad(keyPoints);
 
-			return Math.sqrt(area / areaChild) * this.#tileMap.categoryNameScale;
+			return Math.sqrt(area / areaChild) * this.#categoryNameScale;
 
 		}
 
-		#createSupertile(categoryID, matricesChild, tileMap) {
+		#createSupertile(categoryID, keyPoints, categoryNameScale, matricesChild) {
 
 			const ruleChildCategory = Tiling.#rulesChildCategory[categoryID];
 
 			// 
 			const supertile = new Supertile({
 				categoryID,
-				keyPoints: tileMap.keyPoints,
+				keyPoints,
 				categoryNamePoint: this.#generateSupertileCategoryNamePoint(matricesChild),
-				categoryNameScale: tileMap.categoryNameScale,
+				categoryNameScale,
 			});
 
 			for (const [childIndex, categoryIDChild] of ruleChildCategory.entries()) {
 				if ( categoryIDChild >= 0 ) {
-					supertile.addChild(this.#tileMap.get(categoryIDChild), matricesChild[childIndex]);
+					supertile.addChild(this.get(categoryIDChild), matricesChild[childIndex]);
 				}
 			}
 
@@ -843,13 +817,18 @@
 			const categoryNameScale = this.#generateSupertileCategoryNameScale(keyPoints);
 
 			// 
-			const tileMap = new TileMap(keyPoints, categoryNameScale);
+			const tiling = new Tiling(keyPoints, categoryNameScale);
 
-			for (let categoryID = 0; categoryID < TileMap.length; categoryID++) {
-				tileMap.add(this.#createSupertile(categoryID, matricesChild, tileMap));
+			for (let categoryID = 0; categoryID < Tiling.#categoryCount; categoryID++) {
+				tiling.#add(this.#createSupertile(
+					categoryID,
+					tiling.#keyPoints,
+					tiling.#categoryNameScale,
+					matricesChild,
+				));
 			}
 
-			return new Tiling(tileMap);
+			return tiling;
 
 		}
 
