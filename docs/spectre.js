@@ -441,12 +441,12 @@
 			{ x: 0.0, y: 1.0 },
 		].map(point => DOMPointReadOnly.fromPoint(point));
 
-		static #keyPointIndices = [3, 5, 7, 11];
+		static #keyPoints = [3, 5, 7, 11].map(i => this.#points[i]);
 
 		#path;
 
 		static get keyPoints() {
-			return this.#keyPointIndices.map(i => this.#points[i]);
+			return this.#keyPoints;
 		}
 
 		static get points() {
@@ -543,12 +543,12 @@
 			{ x: -0.5, y: 0.0 + Math.sqrt(3) / 2 },
 		].map(point => DOMPointReadOnly.fromPoint(point));
 
-		static #keyPointIndices = [1, 2, 3, 5];
+		static #keyPoints = [1, 2, 3, 5].map(i => this.#points[i]);
 
 		static #path = EdgeShape.LINE.generatePath(this.#points);
 
 		static get keyPoints() {
-			return this.#keyPointIndices.map(i => this.#points[i]);
+			return this.#keyPoints;
 		}
 
 		static get points() {
