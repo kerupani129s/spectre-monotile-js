@@ -301,8 +301,8 @@
 		constructor({
 			categoryID = -1,
 			keyPoints = null,
-			categoryNamePoint = new DOMPointReadOnly(),
-			categoryNameScale = 1,
+			categoryNamePoint = null,
+			categoryNameScale = 0,
 		} = {}) {
 			this.#categoryID = categoryID;
 			this.#keyPoints = keyPoints;
@@ -458,8 +458,8 @@
 			path = null,
 			categoryID = -1,
 			keyPoints = null,
-			categoryNamePoint = new DOMPointReadOnly(1.1, 1.1),
-			categoryNameScale = 1,
+			categoryNamePoint = null,
+			categoryNameScale = 0,
 		} = {}) {
 			super({ categoryID, keyPoints, categoryNamePoint, categoryNameScale });
 			this.#path = path ?? edgeShape.generatePath(Spectre.points);
@@ -497,14 +497,9 @@
 
 		#children;
 
-		constructor({ path, keyPoints, categoryNameScale }) {
+		constructor({ path, keyPoints, categoryNamePoint, categoryNameScale }) {
 
-			super({
-				categoryID: 0,
-				keyPoints,
-				categoryNamePoint: new DOMPointReadOnly(2.15, 2.15),
-				categoryNameScale,
-			});
+			super({ categoryID: 0, keyPoints, categoryNamePoint, categoryNameScale });
 
 			this.#children = Mystic.#rulesChild.map(({ categoryID, pointIndex, angle }) => {
 
@@ -558,8 +553,8 @@
 		constructor({
 			categoryID = -1,
 			keyPoints = null,
-			categoryNamePoint = new DOMPointReadOnly(0.5, Math.sqrt(3) / 2),
-			categoryNameScale = 1,
+			categoryNamePoint = null,
+			categoryNameScale = 0,
 		} = {}) {
 			super({ categoryID, keyPoints, categoryNamePoint, categoryNameScale });
 		}
@@ -673,6 +668,7 @@
 			tileMap.add(new Mystic({
 				path,
 				keyPoints: tileMap.keyPoints,
+				categoryNamePoint: new DOMPointReadOnly(2.15, 2.15),
 				categoryNameScale: tileMap.categoryNameScale,
 			}));
 			for (let categoryID = 1; categoryID < TileMap.length; categoryID++) {
@@ -680,6 +676,7 @@
 					path,
 					categoryID,
 					keyPoints: tileMap.keyPoints,
+					categoryNamePoint: new DOMPointReadOnly(1.1, 1.1),
 					categoryNameScale: tileMap.categoryNameScale,
 				}));
 			}
@@ -696,6 +693,7 @@
 				tileMap.add(new Hexagon({
 					categoryID,
 					keyPoints: tileMap.keyPoints,
+					categoryNamePoint: new DOMPointReadOnly(0.5, Math.sqrt(3) / 2),
 					categoryNameScale: tileMap.categoryNameScale,
 				}));
 			}
