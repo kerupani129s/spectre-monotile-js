@@ -388,12 +388,9 @@
 
 		#children = [];
 
-		constructor({ categoryID, keyPoints, categoryNamePoint, categoryNameScale }) {
+		constructor({ categoryID, keyPoints, categoryNamePoint, categoryNameScale, children }) {
 			super({ categoryID, keyPoints, categoryNamePoint, categoryNameScale });
-		}
-
-		addChild(tile, matrix) {
-			this.#children.push({ tile, matrix });
+			this.#children = children;
 		}
 
 		render(renderer, matrix) {
@@ -759,7 +756,7 @@
 
 		}
 
-		#generateSupertileCategoryNamePoint(matricesChild) {
+		#generateCategoryNamePoint(matricesChild) {
 
 			const points = Tiling.#rulesChildMatrix
 				.map(({ sharedKeyPointIndices }, childIndex) => {
@@ -778,7 +775,7 @@
 
 		}
 
-		#generateSupertileCategoryNameScale(keyPoints) {
+		#generateCategoryNameScale(keyPoints) {
 
 			const areaChild = Tiling.#areaOfQuad(this.#keyPoints);
 			const area = Tiling.#areaOfQuad(keyPoints);
@@ -787,25 +784,15 @@
 
 		}
 
-		#createSupertile(categoryID, keyPoints, categoryNameScale, matricesChild) {
+		#generateChildren(categoryID, matricesChild) {
 
-			const supertile = new Supertile({
-				categoryID,
-				keyPoints,
-				categoryNamePoint: this.#generateSupertileCategoryNamePoint(matricesChild),
-				categoryNameScale,
-			});
-
-			// 
-			const ruleChildCategory = Tiling.#rulesChildCategory[categoryID];
-
-			for (const [childIndex, categoryIDChild] of ruleChildCategory.entries()) {
-				if ( categoryIDChild >= 0 ) {
-					supertile.addChild(this.get(categoryIDChild), matricesChild[childIndex]);
-				}
-			}
-
-			return supertile;
+			return Tiling.#rulesChildCategory[categoryID].entries()
+				.filter(([, categoryIDChild]) => categoryIDChild >= 0)
+				.map(([childIndex, categoryIDChild]) => ({
+					tile: this.get(categoryIDChild),
+					matrix: matricesChild[childIndex],
+				}))
+				.toArray();
 
 		}
 
@@ -815,17 +802,18 @@
 
 			// 
 			const keyPoints = this.#generateKeyPoints(matricesChild);
-			const categoryNameScale = this.#generateSupertileCategoryNameScale(keyPoints);
+			const categoryNameScale = this.#generateCategoryNameScale(keyPoints);
 
 			const tiling = new Tiling(keyPoints, categoryNameScale);
 
 			for (let categoryID = 0; categoryID < Tiling.#categoryCount; categoryID++) {
-				tiling.#add(this.#createSupertile(
+				tiling.#add(new Supertile({
 					categoryID,
-					tiling.#keyPoints,
-					tiling.#categoryNameScale,
-					matricesChild,
-				));
+					keyPoints: tiling.#keyPoints,
+					categoryNamePoint: this.#generateCategoryNamePoint(matricesChild),
+					categoryNameScale: tiling.#categoryNameScale,
+					children: this.#generateChildren(categoryID, matricesChild),
+				}));
 			}
 
 			return tiling;
