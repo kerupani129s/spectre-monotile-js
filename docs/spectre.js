@@ -442,12 +442,12 @@
 
 		#path;
 
-		static get keyPoints() {
-			return this.#keyPoints;
-		}
-
 		static get points() {
 			return this.#points;
+		}
+
+		static get keyPoints() {
+			return this.#keyPoints;
 		}
 
 		constructor({
@@ -539,12 +539,12 @@
 
 		static #path = EdgeShape.LINE.generatePath(this.#points);
 
-		static get keyPoints() {
-			return this.#keyPoints;
-		}
-
 		static get points() {
 			return this.#points;
+		}
+
+		static get keyPoints() {
+			return this.#keyPoints;
 		}
 
 		constructor({
