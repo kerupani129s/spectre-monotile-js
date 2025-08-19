@@ -440,6 +440,8 @@
 
 		static #keyPoints = [3, 5, 7, 11].map(i => this.#points[i]);
 
+		static #categoryNamePoint = new DOMPointReadOnly(1.1, 1.1);
+
 		#path;
 
 		static get points() {
@@ -455,9 +457,9 @@
 			path = null,
 			categoryID = -1,
 			keyPoints = null,
-			categoryNamePoint = null,
 			categoryNameScale = 0,
 		} = {}) {
+			const categoryNamePoint = (categoryID >= 0 ? Spectre.#categoryNamePoint : null);
 			super({ categoryID, keyPoints, categoryNamePoint, categoryNameScale });
 			this.#path = path ?? edgeShape.generatePath(Spectre.points);
 		}
@@ -492,10 +494,13 @@
 			{ categoryID: 10, pointIndex: 8, angle: 30 },
 		];
 
+		static #categoryNamePoint = new DOMPointReadOnly(2.15, 2.15);
+
 		#children;
 
-		constructor({ path, keyPoints, categoryNamePoint, categoryNameScale }) {
+		constructor({ path, keyPoints, categoryNameScale }) {
 
+			const categoryNamePoint = Mystic.#categoryNamePoint;
 			super({ categoryID: 0, keyPoints, categoryNamePoint, categoryNameScale });
 
 			this.#children = Mystic.#rulesChild.map(({ categoryID, pointIndex, angle }) => {
@@ -537,6 +542,8 @@
 
 		static #keyPoints = [1, 2, 3, 5].map(i => this.#points[i]);
 
+		static #categoryNamePoint = new DOMPointReadOnly(0.5, Math.sqrt(3) / 2);
+
 		static #path = EdgeShape.LINE.generatePath(this.#points);
 
 		static get points() {
@@ -550,9 +557,9 @@
 		constructor({
 			categoryID = -1,
 			keyPoints = null,
-			categoryNamePoint = null,
 			categoryNameScale = 0,
 		} = {}) {
+			const categoryNamePoint = (categoryID >= 0 ? Hexagon.#categoryNamePoint : null);
 			super({ categoryID, keyPoints, categoryNamePoint, categoryNameScale });
 		}
 
@@ -634,7 +641,6 @@
 			tiling.#add(new Mystic({
 				path,
 				keyPoints: tiling.#keyPoints,
-				categoryNamePoint: new DOMPointReadOnly(2.15, 2.15),
 				categoryNameScale: tiling.#categoryNameScale,
 			}));
 			for (let categoryID = 1; categoryID < Tiling.#categoryCount; categoryID++) {
@@ -642,7 +648,6 @@
 					path,
 					categoryID,
 					keyPoints: tiling.#keyPoints,
-					categoryNamePoint: new DOMPointReadOnly(1.1, 1.1),
 					categoryNameScale: tiling.#categoryNameScale,
 				}));
 			}
@@ -659,7 +664,6 @@
 				tiling.#add(new Hexagon({
 					categoryID,
 					keyPoints: tiling.#keyPoints,
-					categoryNamePoint: new DOMPointReadOnly(0.5, Math.sqrt(3) / 2),
 					categoryNameScale: tiling.#categoryNameScale,
 				}));
 			}
@@ -802,6 +806,7 @@
 
 			// 
 			const keyPoints = this.#generateKeyPoints(matricesChild);
+			const categoryNamePoint = this.#generateCategoryNamePoint(matricesChild);
 			const categoryNameScale = this.#generateCategoryNameScale(keyPoints);
 
 			const tiling = new Tiling(keyPoints, categoryNameScale);
@@ -810,7 +815,7 @@
 				tiling.#add(new Supertile({
 					categoryID,
 					keyPoints: tiling.#keyPoints,
-					categoryNamePoint: this.#generateCategoryNamePoint(matricesChild),
+					categoryNamePoint,
 					categoryNameScale: tiling.#categoryNameScale,
 					children: this.#generateChildren(categoryID, matricesChild),
 				}));
