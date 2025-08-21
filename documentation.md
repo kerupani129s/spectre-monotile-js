@@ -20,7 +20,7 @@ static extractScale(matrix)
 ```javascript
 context
 
-radiusKeyPoint
+keyPointRadius
 
 noFill
 noStrokeQuad
@@ -41,7 +41,7 @@ init({
 	height = 150,
 	matrix = Matrix.IDENTITY.scale(20),
 	lineWidth = 2,
-	radiusKeyPoint = 5,
+	keyPointRadius = 5,
 	noFill = false,
 	noStrokeQuad = false,
 } = {})

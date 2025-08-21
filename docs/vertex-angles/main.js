@@ -11,7 +11,7 @@
 
 		// 
 		const path = new Path2D();
-		path.arc(point.x, point.y, renderer.radiusKeyPoint, 0, 2 * Math.PI);
+		path.arc(point.x, point.y, renderer.keyPointRadius, 0, 2 * Math.PI);
 		renderer.context.fill(path);
 
 		renderer.context.fillText(text, x, y);

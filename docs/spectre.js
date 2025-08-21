@@ -46,7 +46,7 @@
 
 		#matrix;
 
-		radiusKeyPoint;
+		keyPointRadius;
 		#fontSizeBase;
 
 		noFill;
@@ -82,7 +82,7 @@
 			height = 150,
 			matrix = Matrix.IDENTITY.scale(20),
 			lineWidth = 2,
-			radiusKeyPoint = 5,
+			keyPointRadius = 5,
 			noFill = false,
 			noStrokeQuad = false,
 		} = {}) {
@@ -104,7 +104,7 @@
 
 			this.matrix = matrix;
 
-			this.radiusKeyPoint = radiusKeyPoint;
+			this.keyPointRadius = keyPointRadius;
 
 			this.noFill = noFill;
 			this.noStrokeQuad = noStrokeQuad;
@@ -343,7 +343,7 @@
 
 			for (const { x, y } of points) {
 				const pathKeyPoint = new Path2D();
-				pathKeyPoint.arc(x, y, renderer.radiusKeyPoint, 0, 2 * Math.PI);
+				pathKeyPoint.arc(x, y, renderer.keyPointRadius, 0, 2 * Math.PI);
 				renderer.context.fill(pathKeyPoint);
 			}
 
