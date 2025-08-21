@@ -2,9 +2,10 @@
 
 [Documentation](documentation.md)
 
-## Demo
+## Demos
 
-[Monotiles: Spectre/Tile(1, 1)](https://kerupani129s.github.io/spectre-monotile-js/)
+- [Monotiles: Spectre/Tile(1, 1)](https://kerupani129s.github.io/spectre-monotile-js/)
+- [Vertex angles of Tile(1, 1)](https://kerupani129s.github.io/spectre-monotile-js/vertex-angles/)
 
 ## Usage
 
