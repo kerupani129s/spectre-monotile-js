@@ -315,18 +315,10 @@
 		renderKeyPoints(renderer, matrix) {
 
 			if ( ! renderer.noStrokeQuad ) {
-				if ( this.#categoryID === 0 ) {
-					renderer.context.strokeStyle = '#0000ff';
-				} else {
-					renderer.context.strokeStyle = '#ff0000';
-				}
+				renderer.context.strokeStyle = (this.#categoryID === 0 ? '#0000ff' : '#ff0000');
 			}
 
-			if ( this.#categoryID === 0 ) {
-				renderer.context.fillStyle = '#0000ff';
-			} else {
-				renderer.context.fillStyle = '#ff0000';
-			}
+			renderer.context.fillStyle = (this.#categoryID === 0 ? '#0000ff' : '#ff0000');
 
 			// 
 			const points = this.#keyPoints.map(point => matrix.transformPoint(point));
@@ -471,13 +463,13 @@
 		render(renderer, matrix) {
 
 			if ( ! renderer.noFill ) {
-				if ( this.categoryID === 9 ) {
-					renderer.context.fillStyle = '#a0ffa0';
-				} else if ( this.categoryID === 10 ) {
-					renderer.context.fillStyle = '#80ffff';
-				} else {
-					renderer.context.fillStyle = '#ffffff';
-				}
+				renderer.context.fillStyle = (this.categoryID === 9 ? (
+					'#a0ffa0'
+				) : this.categoryID === 10 ? (
+					'#80ffff'
+				) : (
+					'#ffffff'
+				));
 			}
 
 			const path = new Path2D();
@@ -574,11 +566,7 @@
 		render(renderer, matrix) {
 
 			if ( ! renderer.noFill ) {
-				if ( this.categoryID === 0 ) {
-					renderer.context.fillStyle = '#80ffff';
-				} else {
-					renderer.context.fillStyle = '#ffffff';
-				}
+				renderer.context.fillStyle = (this.categoryID === 0 ? '#80ffff' : '#ffffff');
 			}
 
 			const path = new Path2D();
