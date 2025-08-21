@@ -388,6 +388,10 @@
 
 		#children = [];
 
+		get children() {
+			return this.#children;
+		}
+
 		constructor({ categoryID, keyPoints, categoryNamePoint, categoryNameScale, children }) {
 			super({ categoryID, keyPoints, categoryNamePoint, categoryNameScale });
 			this.#children = children;
@@ -497,6 +501,10 @@
 		static #categoryNamePoint = new DOMPointReadOnly(2.15, 2.15);
 
 		#children;
+
+		get children() {
+			return this.#children;
+		}
 
 		constructor({ path, keyPoints, categoryNameScale }) {
 

@@ -82,6 +82,10 @@ get categoryName()
 
 Inheritance: `Tile`
 
+```javascript
+get children()
+```
+
 ### Spectre class
 
 Inheritance: `Tile`
@@ -95,6 +99,10 @@ constructor({ edgeShape = EdgeShape.LINE })
 ### Mystic class
 
 Inheritance: `Tile`
+
+```javascript
+get children()
+```
 
 ### Hexagon class
 
