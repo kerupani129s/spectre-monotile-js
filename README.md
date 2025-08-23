@@ -6,6 +6,7 @@
 
 - [Monotiles: Spectre/Tile(1, 1)](https://kerupani129s.github.io/spectre-monotile-js/)
 - [Vertex angles of Tile(1, 1)](https://kerupani129s.github.io/spectre-monotile-js/vertex-angles/)
+- [Periodic tiling by Tile(1, 1)](https://kerupani129s.github.io/spectre-monotile-js/periodic-tiling/)
 
 ## Usage
 
