@@ -2,7 +2,7 @@
 
 	const { Matrix, Renderer, Spectre } = Monotile;
 
-	const renderAngle = (renderer, text, point, vector, distance) => {
+	const renderVertexAngle = (renderer, text, point, vector, distance) => {
 
 		const length = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
 
@@ -52,10 +52,10 @@
 
 			if ( i === 10 ) {
 				const vector = { x: - vectorNext.y, y: vectorNext.x };
-				renderAngle(renderer, '180°', point, vector, 0.35 * 80 * Math.sqrt(3) / 2);
+				renderVertexAngle(renderer, '180°', point, vector, 0.35 * 80 * Math.sqrt(3) / 2);
 			} else {
 				const vector = { x: vectorPrev.x + vectorNext.x, y: vectorPrev.y + vectorNext.y };
-				renderAngle(renderer, (i % 2 === 0 ? '90°' : '120°'), point, vector, 0.35 * 80);
+				renderVertexAngle(renderer, (i % 2 === 0 ? '90°' : '120°'), point, vector, 0.35 * 80);
 			}
 
 		}
