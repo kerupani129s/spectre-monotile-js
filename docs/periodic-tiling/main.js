@@ -10,24 +10,32 @@
 		renderer.init({
 			width: 640,
 			height: 480,
-			matrix: Matrix.IDENTITY.scale(40).translate(2, 1).rotate(15),
+			matrix: Matrix.IDENTITY.scale(40).translate(2, 1),
 		});
 
 		// 
 		const tile = new Spectre();
 
-		for (let i = 0; i < 4; i++) {
+		const [pointRight, pointBottom] = [6, 10].map(i => Spectre.points[i]);
 
-			let x = i * Spectre.points[10].x;
-			let y = i * Spectre.points[10].y;
+		const matricesRotation = [
+			Matrix.IDENTITY.rotate(15),
+			Matrix.IDENTITY.rotate(-15).flipY(),
+		];
 
-			for (let j = 0; j < 4; j++) {
-				const matrixBase = Matrix.IDENTITY.translate(x, y);
-				const matrix = (j % 2 === 0 ? matrixBase : matrixBase.rotate(-30).flipY());
+		for (let i = 0, pointBase = new DOMPointReadOnly(); i < 4; i++) {
+			for (let j = 0, point = pointBase; j < 4; j++) {
+
+				const matrix = Matrix.IDENTITY.translate(point.x, point.y)
+					.multiply(matricesRotation[j % 2]);
 				renderer.render(tile, matrix);
-				({ x, y } = matrix.transformPoint(Spectre.points[6]));
-			}
 
+				point = matrix.transformPoint(pointRight);
+				if ( j === 0 ) {
+					pointBase = matrix.transformPoint(pointBottom);
+				}
+
+			}
 		}
 
 		// 
