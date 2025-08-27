@@ -505,7 +505,7 @@
 
 			this.#children = Mystic.#rulesChild.map(({ categoryID, pointIndex, angle }) => {
 
-				const tile = new Spectre({ path, categoryID });
+				const tile = new Spectre({ path, categoryID, categoryNameScale });
 				const { x, y } = Spectre.points[pointIndex];
 				const matrix = Matrix.IDENTITY.translate(x, y).rotate(angle);
 
