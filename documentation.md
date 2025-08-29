@@ -95,7 +95,7 @@ Inheritance: `Tile`
 ```javascript
 static get points()
 
-constructor({ edgeShape = EdgeShape.LINE })
+constructor({ edgeShape = EdgeShape.LINE } = {})
 ```
 
 ### Mystic class
