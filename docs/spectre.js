@@ -127,6 +127,10 @@
 			supertile.renderChildKeyPoints(this, this.matrix.multiply(matrix));
 		}
 
+		renderText(tile, matrix = Matrix.IDENTITY, text, { scale = 1 } = {}) {
+			tile.renderText(this, this.matrix.multiply(matrix), text, { scale });
+		}
+
 		renderCategoryName(tile, matrix = Matrix.IDENTITY) {
 			tile.renderCategoryName(this, this.matrix.multiply(matrix));
 		}
@@ -287,8 +291,8 @@
 		#categoryID;
 		#keyPoints;
 
-		#categoryNamePoint;
-		#categoryNameScale;
+		#textPosition;
+		#textScale;
 
 		get categoryID() {
 			return this.#categoryID;
@@ -301,13 +305,13 @@
 		constructor({
 			categoryID = -1,
 			keyPoints = null,
-			categoryNamePoint = null,
-			categoryNameScale = 0,
+			textPosition = null,
+			textScale = 1,
 		} = {}) {
 			this.#categoryID = categoryID;
 			this.#keyPoints = keyPoints;
-			this.#categoryNamePoint = categoryNamePoint;
-			this.#categoryNameScale = categoryNameScale;
+			this.#textPosition = textPosition;
+			this.#textScale = textScale;
 		}
 
 		render(renderer, matrix) {}
@@ -341,30 +345,32 @@
 
 		}
 
-		renderCategoryName(renderer, matrix) {
+		renderText(renderer, matrix, text, { scale = 1 } = {}) {
 
 			// 
-			const fontSize = this.#categoryNameScale * renderer.fontSizeBase;
+			const fontSize = scale * this.#textScale * renderer.fontSizeBase;
 
 			renderer.context.font = `${fontSize}px serif`;
 			renderer.context.fillStyle = '#000000';
 
 			// 
-			const categoryName = Tile.#categoryNames[this.#categoryID];
-
-			const { x, y } = matrix.transformPoint(this.#categoryNamePoint);
+			const { x, y } = matrix.transformPoint(this.#textPosition);
 
 			const {
 				actualBoundingBoxAscent,
 				actualBoundingBoxDescent,
-			} = renderer.context.measureText(categoryName);
+			} = renderer.context.measureText(text);
 
 			renderer.context.fillText(
-				categoryName,
+				text,
 				x,
 				y + (actualBoundingBoxAscent - actualBoundingBoxDescent) / 2,
 			);
 
+		}
+
+		renderCategoryName(renderer, matrix) {
+			this.renderText(renderer, matrix, Tile.#categoryNames[this.#categoryID]);
 		}
 
 		renderCategoryNames(renderer, matrix) {
@@ -384,8 +390,8 @@
 			return this.#children;
 		}
 
-		constructor({ categoryID, keyPoints, categoryNamePoint, categoryNameScale, children }) {
-			super({ categoryID, keyPoints, categoryNamePoint, categoryNameScale });
+		constructor({ categoryID, keyPoints, textPosition, textScale, children }) {
+			super({ categoryID, keyPoints, textPosition, textScale });
 			this.#children = children;
 		}
 
@@ -436,7 +442,7 @@
 
 		static #keyPoints = [3, 5, 7, 11].map(i => this.#points[i]);
 
-		static #categoryNamePoint = new DOMPointReadOnly(1.1, 1.1);
+		static #textPosition = new DOMPointReadOnly(1.1, 1.1);
 
 		#path;
 
@@ -453,10 +459,9 @@
 			path = null,
 			categoryID = -1,
 			keyPoints = null,
-			categoryNameScale = 0,
+			textScale = 1,
 		} = {}) {
-			const categoryNamePoint = (categoryID >= 0 ? Spectre.#categoryNamePoint : null);
-			super({ categoryID, keyPoints, categoryNamePoint, categoryNameScale });
+			super({ categoryID, keyPoints, textPosition: Spectre.#textPosition, textScale });
 			this.#path = path ?? edgeShape.generatePath(Spectre.points);
 		}
 
@@ -490,7 +495,7 @@
 			{ categoryID: 10, pointIndex: 8, angle: 30 },
 		];
 
-		static #categoryNamePoint = new DOMPointReadOnly(2.15, 2.15);
+		static #textPosition = new DOMPointReadOnly(2.15, 2.15);
 
 		#children;
 
@@ -498,14 +503,13 @@
 			return this.#children;
 		}
 
-		constructor({ path, keyPoints, categoryNameScale }) {
+		constructor({ path, keyPoints, textScale }) {
 
-			const categoryNamePoint = Mystic.#categoryNamePoint;
-			super({ categoryID: 0, keyPoints, categoryNamePoint, categoryNameScale });
+			super({ categoryID: 0, keyPoints, textPosition: Mystic.#textPosition, textScale });
 
 			this.#children = Mystic.#rulesChild.map(({ categoryID, pointIndex, angle }) => {
 
-				const tile = new Spectre({ path, categoryID, categoryNameScale });
+				const tile = new Spectre({ path, categoryID, textScale });
 				const { x, y } = Spectre.points[pointIndex];
 				const matrix = Matrix.IDENTITY.translate(x, y).rotate(angle);
 
@@ -542,7 +546,7 @@
 
 		static #keyPoints = [1, 2, 3, 5].map(i => this.#points[i]);
 
-		static #categoryNamePoint = new DOMPointReadOnly(0.5, Math.sqrt(3) / 2);
+		static #textPosition = new DOMPointReadOnly(0.5, Math.sqrt(3) / 2);
 
 		static #path = EdgeShape.LINE.generatePath(this.#points);
 
@@ -557,10 +561,9 @@
 		constructor({
 			categoryID = -1,
 			keyPoints = null,
-			categoryNameScale = 0,
+			textScale = 1,
 		} = {}) {
-			const categoryNamePoint = (categoryID >= 0 ? Hexagon.#categoryNamePoint : null);
-			super({ categoryID, keyPoints, categoryNamePoint, categoryNameScale });
+			super({ categoryID, keyPoints, textPosition: Hexagon.#textPosition, textScale });
 		}
 
 		render(renderer, matrix) {
@@ -621,7 +624,7 @@
 
 		#keyPoints;
 
-		#categoryNameScale;
+		#textScale;
 
 		static get categoryCount() {
 			return Tiling.#categoryCount;
@@ -637,14 +640,14 @@
 			tiling.#add(new Mystic({
 				path,
 				keyPoints: tiling.#keyPoints,
-				categoryNameScale: tiling.#categoryNameScale,
+				textScale: tiling.#textScale,
 			}));
 			for (let categoryID = 1; categoryID < Tiling.#categoryCount; categoryID++) {
 				tiling.#add(new Spectre({
 					path,
 					categoryID,
 					keyPoints: tiling.#keyPoints,
-					categoryNameScale: tiling.#categoryNameScale,
+					textScale: tiling.#textScale,
 				}));
 			}
 
@@ -660,7 +663,7 @@
 				tiling.#add(new Hexagon({
 					categoryID,
 					keyPoints: tiling.#keyPoints,
-					categoryNameScale: tiling.#categoryNameScale,
+					textScale: tiling.#textScale,
 				}));
 			}
 
@@ -677,9 +680,9 @@
 			) / 2;
 		}
 
-		constructor(keyPoints, categoryNameScale) {
+		constructor(keyPoints, textScale) {
 			this.#keyPoints = keyPoints;
-			this.#categoryNameScale = categoryNameScale;
+			this.#textScale = textScale;
 		}
 
 		#add(tile) {
@@ -780,7 +783,7 @@
 			const areaChild = Tiling.#areaOfQuad(this.#keyPoints);
 			const area = Tiling.#areaOfQuad(keyPoints);
 
-			return Math.sqrt(area / areaChild) * this.#categoryNameScale;
+			return Math.sqrt(area / areaChild) * this.#textScale;
 
 		}
 
@@ -802,17 +805,17 @@
 
 			// 
 			const keyPoints = this.#generateKeyPoints(matricesChild);
-			const categoryNamePoint = this.#generateCategoryNamePoint(matricesChild);
-			const categoryNameScale = this.#generateCategoryNameScale(keyPoints);
+			const textPosition = this.#generateCategoryNamePoint(matricesChild);
+			const textScale = this.#generateCategoryNameScale(keyPoints);
 
-			const tiling = new Tiling(keyPoints, categoryNameScale);
+			const tiling = new Tiling(keyPoints, textScale);
 
 			for (let categoryID = 0; categoryID < Tiling.#categoryCount; categoryID++) {
 				tiling.#add(new Supertile({
 					categoryID,
 					keyPoints: tiling.#keyPoints,
-					categoryNamePoint,
-					categoryNameScale: tiling.#categoryNameScale,
+					textPosition,
+					textScale: tiling.#textScale,
 					children: this.#generateChildren(categoryID, matricesChild),
 				}));
 			}
