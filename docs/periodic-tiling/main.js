@@ -28,7 +28,7 @@
 
 				const matrix = Matrix.IDENTITY.translate(point.x, point.y)
 					.multiply(matricesRotation[j % 2]);
-				renderer.render(tile, matrix);
+				renderer.render(tile, { matrix });
 
 				point = matrix.transformPoint(pointRight);
 				if ( j === 0 ) {

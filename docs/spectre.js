@@ -115,31 +115,31 @@
 			this.context.clearRect(0, 0, this.width, this.height);
 		}
 
-		render(tile, matrix = Matrix.IDENTITY) {
+		render(tile, { matrix = Matrix.IDENTITY } = {}) {
 			tile.render(this, this.matrix.multiply(matrix));
 		}
 
-		renderKeyPoints(tile, matrix = Matrix.IDENTITY) {
+		renderKeyPoints(tile, { matrix = Matrix.IDENTITY } = {}) {
 			tile.renderKeyPoints(this, this.matrix.multiply(matrix));
 		}
 
-		renderChildKeyPoints(supertile, matrix = Matrix.IDENTITY) {
+		renderChildKeyPoints(supertile, { matrix = Matrix.IDENTITY } = {}) {
 			supertile.renderChildKeyPoints(this, this.matrix.multiply(matrix));
 		}
 
-		renderText(tile, matrix = Matrix.IDENTITY, text, { scale = 1 } = {}) {
+		renderText(tile, text, { matrix = Matrix.IDENTITY, style: { scale = 1 } = {} } = {}) {
 			tile.renderText(this, this.matrix.multiply(matrix), text, { scale });
 		}
 
-		renderCategoryName(tile, matrix = Matrix.IDENTITY) {
+		renderCategoryName(tile, { matrix = Matrix.IDENTITY } = {}) {
 			tile.renderCategoryName(this, this.matrix.multiply(matrix));
 		}
 
-		renderChildCategoryNames(supertile, matrix = Matrix.IDENTITY) {
+		renderChildCategoryNames(supertile, { matrix = Matrix.IDENTITY } = {}) {
 			supertile.renderChildCategoryNames(this, this.matrix.multiply(matrix));
 		}
 
-		renderCategoryNames(tile, matrix = Matrix.IDENTITY) {
+		renderCategoryNames(tile, { matrix = Matrix.IDENTITY } = {}) {
 			tile.renderCategoryNames(this, this.matrix.multiply(matrix));
 		}
 

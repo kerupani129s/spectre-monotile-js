@@ -48,16 +48,16 @@ init({
 
 clear()
 
-render(tile, matrix = Matrix.IDENTITY)
+render(tile, { matrix = Matrix.IDENTITY } = {})
 
-renderKeyPoints(tile, matrix = Matrix.IDENTITY)
-renderChildKeyPoints(supertile, matrix = Matrix.IDENTITY)
+renderKeyPoints(tile, { matrix = Matrix.IDENTITY } = {})
+renderChildKeyPoints(supertile, { matrix = Matrix.IDENTITY } = {})
 
-renderText(tile, matrix = Matrix.IDENTITY, text, { scale = 1 } = {})
+renderText(tile, text, { matrix = Matrix.IDENTITY, style: { scale = 1 } = {} } = {})
 
-renderCategoryName(tile, matrix = Matrix.IDENTITY)
-renderChildCategoryNames(supertile, matrix = Matrix.IDENTITY)
-renderCategoryNames(tile, matrix = Matrix.IDENTITY)
+renderCategoryName(tile, { matrix = Matrix.IDENTITY } = {})
+renderChildCategoryNames(supertile, { matrix = Matrix.IDENTITY } = {})
+renderCategoryNames(tile, { matrix = Matrix.IDENTITY } = {})
 
 async extractImage({ type, quality } = {})
 ```

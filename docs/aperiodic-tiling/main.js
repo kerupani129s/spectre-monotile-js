@@ -8,9 +8,11 @@
 		for (const [i, child] of supertile.children.entries()) {
 			renderer.renderText(
 				child.tile,
-				matrix.multiply(child.matrix),
 				`${angles[i]}°`,
-				{ scale: 0.75 },
+				{
+					matrix: matrix.multiply(child.matrix),
+					style: { scale: 0.75 },
+				},
 			);
 		}
 	};
