@@ -10,7 +10,7 @@
 static get IDENTITY()
 static get FLIPPING()
 
-static decomposeScale(matrix)
+static extractScale(matrix)
 ```
 
 ## Rendering
@@ -20,13 +20,10 @@ static decomposeScale(matrix)
 ```javascript
 context
 
-matrix
-
-radiusKeyPoint
+keyPointRadius
 
 noFill
 noStrokeQuad
-noRenderCategoryName
 
 get canvas()
 
@@ -34,26 +31,44 @@ get width()
 
 get height()
 
+set matrix(matrix)
+get matrix()
+
+constructor()
+
 init({
 	width = 300,
 	height = 150,
 	matrix = Matrix.IDENTITY.scale(20),
 	lineWidth = 2,
-	radiusKeyPoint = 5,
+	keyPointRadius = 5,
 	noFill = false,
 	noStrokeQuad = false,
-	noRenderCategoryName = true,
 } = {})
 
 clear()
 
-render(tile, matrix = Matrix.IDENTITY)
+render(tile, { matrix = Matrix.IDENTITY } = {})
 
-renderKeyPoints(tile, matrix = Matrix.IDENTITY)
+renderKeyPoints(tile, { matrix = Matrix.IDENTITY } = {})
+renderChildKeyPoints(supertile, { matrix = Matrix.IDENTITY } = {})
 
-renderChildKeyPoints(tile, matrix = Matrix.IDENTITY)
+renderText(tile, text, { matrix = Matrix.IDENTITY, style: { scale = 1 } = {} } = {})
+
+renderCategoryName(tile, { matrix = Matrix.IDENTITY } = {})
+renderChildCategoryNames(supertile, { matrix = Matrix.IDENTITY } = {})
+renderCategoryNames(tile, { matrix = Matrix.IDENTITY } = {})
 
 async extractImage({ type, quality } = {})
+```
+
+## Edges
+
+### EdgeShape class
+
+```javascript
+static get LINE()
+static get BEZIER_CURVE()
 ```
 
 ## Tiles
@@ -65,19 +80,13 @@ get categoryID()
 get categoryName()
 ```
 
-### Tiles class
-
-```javascript
-static get length()
-
-get keyPoints()
-
-get(categoryID)
-```
-
 ### Supertile class
 
 Inheritance: `Tile`
+
+```javascript
+get children()
+```
 
 ### Spectre class
 
@@ -86,7 +95,7 @@ Inheritance: `Tile`
 ```javascript
 static get points()
 
-constructor(categoryID, strict = false)
+constructor({ edgeShape = EdgeShape.LINE } = {})
 ```
 
 ### Mystic class
@@ -94,17 +103,30 @@ constructor(categoryID, strict = false)
 Inheritance: `Tile`
 
 ```javascript
-constructor(strict = false)
+get children()
+```
+
+### Hexagon class
+
+Inheritance: `Tile`
+
+```javascript
+static get points()
+
+constructor()
 ```
 
 ## Tiling
 
-### Spectres class
-
-Inheritance: `Tiles`
+### Tiling class
 
 ```javascript
-static create(strict = false)
+static get categoryCount()
+
+static createSpectres(edgeShape = EdgeShape.LINE)
+static createHexagons()
+
+get(categoryID)
 
 substitute()
 ```

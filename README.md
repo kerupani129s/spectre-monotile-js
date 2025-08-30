@@ -2,18 +2,21 @@
 
 [Documentation](documentation.md)
 
-## Demo
+## Demos
 
-[Monotiles: Spectre/Tile(1, 1)](https://kerupani129s.github.io/spectre-monotile-js/)
+- [Monotiles: Spectre/Tile(1, 1)](https://kerupani129s.github.io/spectre-monotile-js/)
+- [Vertex angles of Tile(1, 1)](https://kerupani129s.github.io/spectre-monotile-js/vertex-angles/)
+- [Periodic tiling by Tile(1, 1)](https://kerupani129s.github.io/spectre-monotile-js/periodic-tiling/)
+- [Aperiodic tiling by Tile(1, 1)](https://kerupani129s.github.io/spectre-monotile-js/aperiodic-tiling/)
 
 ## Usage
 
 ```html
-<script src="spectre.js?v=2.0.0"></script>
+<script src="spectre.js?v=3.0.0"></script>
 ```
 
 ```javascript
-const { Matrix, Renderer, Spectres } = Monotile;
+const { Matrix, Renderer, EdgeShape, Tiling } = Monotile;
 
 // 
 const renderer = new Renderer();
@@ -27,7 +30,8 @@ renderer.init({
 document.body.appendChild(renderer.canvas);
 
 // 
-const tile = Spectres.create(true).substitute().get(1);
+const tile = Tiling.createSpectres(EdgeShape.BEZIER_CURVE)
+	.substitute().get(1);
 
 renderer.render(tile);
 renderer.renderChildKeyPoints(tile);

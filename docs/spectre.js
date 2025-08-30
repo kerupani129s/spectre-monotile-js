@@ -18,7 +18,11 @@
 			return this.#flipping;
 		}
 
-		static decomposeScale(matrix) {
+		static extractPosition(matrix) {
+			return { x: matrix.e, y: matrix.f };
+		}
+
+		static extractScale(matrix) {
 
 			// [c, s, - s, c, 0, 0] [x, 0, 0, y, 0, 0] = [c x, s x, - s y, c y, 0, 0]
 			// sqrt((  c x) ^ 2 + (s x) ^ 2) = sqrt(c ^ 2 + s ^ 2) x = x
@@ -40,13 +44,13 @@
 		#canvas;
 		context;
 
-		matrix;
+		#matrix;
 
-		radiusKeyPoint;
+		keyPointRadius;
+		#fontSizeBase;
 
 		noFill;
 		noStrokeQuad;
-		noRenderCategoryName;
 
 		get canvas() {
 			return this.#canvas;
@@ -60,15 +64,27 @@
 			return this.#canvas.height;
 		}
 
+		set matrix(matrix) {
+			this.#matrix = matrix;
+			this.#fontSizeBase = Matrix.extractScale(matrix).y;
+		}
+
+		get matrix() {
+			return this.#matrix;
+		}
+
+		get fontSizeBase() {
+			return this.#fontSizeBase;
+		}
+
 		init({
 			width = 300,
 			height = 150,
 			matrix = Matrix.IDENTITY.scale(20),
 			lineWidth = 2,
-			radiusKeyPoint = 5,
+			keyPointRadius = 5,
 			noFill = false,
 			noStrokeQuad = false,
-			noRenderCategoryName = true,
 		} = {}) {
 
 			const canvas = document.createElement('canvas');
@@ -88,11 +104,10 @@
 
 			this.matrix = matrix;
 
-			this.radiusKeyPoint = radiusKeyPoint;
+			this.keyPointRadius = keyPointRadius;
 
 			this.noFill = noFill;
 			this.noStrokeQuad = noStrokeQuad;
-			this.noRenderCategoryName = noRenderCategoryName;
 
 		}
 
@@ -100,16 +115,32 @@
 			this.context.clearRect(0, 0, this.width, this.height);
 		}
 
-		render(tile, matrix = Matrix.IDENTITY) {
+		render(tile, { matrix = Matrix.IDENTITY } = {}) {
 			tile.render(this, this.matrix.multiply(matrix));
 		}
 
-		renderKeyPoints(tile, matrix = Matrix.IDENTITY) {
+		renderKeyPoints(tile, { matrix = Matrix.IDENTITY } = {}) {
 			tile.renderKeyPoints(this, this.matrix.multiply(matrix));
 		}
 
-		renderChildKeyPoints(tile, matrix = Matrix.IDENTITY) {
-			tile.renderChildKeyPoints(this, this.matrix.multiply(matrix));
+		renderChildKeyPoints(supertile, { matrix = Matrix.IDENTITY } = {}) {
+			supertile.renderChildKeyPoints(this, this.matrix.multiply(matrix));
+		}
+
+		renderText(tile, text, { matrix = Matrix.IDENTITY, style: { scale = 1 } = {} } = {}) {
+			tile.renderText(this, this.matrix.multiply(matrix), text, { scale });
+		}
+
+		renderCategoryName(tile, { matrix = Matrix.IDENTITY } = {}) {
+			tile.renderCategoryName(this, this.matrix.multiply(matrix));
+		}
+
+		renderChildCategoryNames(supertile, { matrix = Matrix.IDENTITY } = {}) {
+			supertile.renderChildCategoryNames(this, this.matrix.multiply(matrix));
+		}
+
+		renderCategoryNames(tile, { matrix = Matrix.IDENTITY } = {}) {
+			tile.renderCategoryNames(this, this.matrix.multiply(matrix));
 		}
 
 		async extractImage({ type, quality } = {}) {
@@ -124,6 +155,133 @@
 	};
 
 	// 
+	// 辺の形状
+	// 
+	const EdgePath = class {
+
+		// TODO: 仮
+		#joinPath;
+
+		// TODO: 仮
+		set(joinPath) {
+			this.#joinPath = joinPath;
+		}
+
+		joinPath(path, pointStart, pointEnd, reversed) {
+			// TODO: 仮
+			this.#joinPath(path, pointStart, pointEnd, reversed);
+		}
+
+	};
+
+	const EdgeShape = class {
+
+		#edgePath;
+
+		static get LINE() {
+			// メモ: 後で定義
+			return line;
+		}
+
+		static get BEZIER_CURVE() {
+			// メモ: 後で定義
+			return bezierCurve;
+		}
+
+		constructor(edgePath) {
+			this.#edgePath = edgePath;
+		}
+
+		generatePath(points) {
+
+			const path = new Path2D();
+
+			path.moveTo(points[0].x, points[0].y);
+
+			for (const [i, pointStart] of points.entries()) {
+				const pointEnd = points[i === points.length - 1 ? 0 : i + 1];
+				this.#edgePath.joinPath(path, pointStart, pointEnd, i % 2 === 0);
+			}
+
+			path.closePath();
+
+			return path;
+
+		}
+
+	};
+
+	const Line = class extends EdgeShape {
+
+		constructor() {
+
+			const edgePath = new EdgePath();
+
+			// TODO: 仮
+			edgePath.set((path, pointStart, pointEnd, reversed) => (
+				this.#joinPath(path, pointStart, pointEnd, reversed)
+			));
+
+			super(edgePath);
+
+		}
+
+		#joinPath(path, pointStart, pointEnd, reversed) {
+			path.lineTo(pointEnd.x, pointEnd.y);
+		}
+
+	};
+
+	const BezierCurve = class extends EdgeShape {
+
+		// 変換行列: (0, 0) と (1, 0) を入れ替えるような 180 度回転
+		static #matrixReversing = new DOMMatrixReadOnly([-1, 0, 0, -1, 1, 0]);
+
+		static #controlPoints = [
+			{ x: 1 / 3, y: 0.5 },
+			{ x: 1 - 1 / 3, y: 0.5 },
+		].map(point => DOMPointReadOnly.fromPoint(point));
+
+		constructor() {
+
+			const edgePath = new EdgePath();
+
+			// TODO: 仮
+			edgePath.set((path, pointStart, pointEnd, reversed) => (
+				this.#joinPath(path, pointStart, pointEnd, reversed)
+			));
+
+			super(edgePath);
+
+		}
+
+		#joinPath(path, pointStart, pointEnd, reversed) {
+
+			const matrix = Matrix.IDENTITY
+				.translate(pointStart.x, pointStart.y)
+				.rotateFromVector(
+					pointEnd.x - pointStart.x,
+					pointEnd.y - pointStart.y,
+				)
+				.multiply(reversed ? BezierCurve.#matrixReversing : Matrix.IDENTITY);
+			const controlPoints = BezierCurve.#controlPoints.map(point => matrix.transformPoint(point));
+			const indices = (reversed ? [1, 0] : [0, 1]);
+
+			path.bezierCurveTo(
+				controlPoints[indices[0]].x, controlPoints[indices[0]].y,
+				controlPoints[indices[1]].x, controlPoints[indices[1]].y,
+				pointEnd.x, pointEnd.y,
+			);
+
+		}
+
+	};
+
+	// メモ: EdgeShape の初期化完了前に EdgeShape のプロパティに代入することは不可
+	const line = new Line();
+	const bezierCurve = new BezierCurve();
+
+	// 
 	// タイル
 	// 
 	const Tile = class {
@@ -131,12 +289,10 @@
 		static #categoryNames = ['Γ', 'Δ', 'Θ', 'Λ', 'Ξ', 'Π', 'Σ', 'Φ', 'Ψ', 'Γ₁', 'Γ₂'];
 
 		#categoryID;
-		#tiles;
+		#keyPoints;
 
-		constructor(categoryID, tiles = null) {
-			this.#categoryID = categoryID;
-			this.#tiles = tiles;
-		}
+		#textPosition;
+		#textScale;
 
 		get categoryID() {
 			return this.#categoryID;
@@ -146,31 +302,35 @@
 			return Tile.#categoryNames[this.#categoryID];
 		}
 
+		constructor({
+			categoryID = -1,
+			keyPoints = null,
+			textPosition = null,
+			textScale = 1,
+		} = {}) {
+			this.#categoryID = categoryID;
+			this.#keyPoints = keyPoints;
+			this.#textPosition = textPosition;
+			this.#textScale = textScale;
+		}
+
 		render(renderer, matrix) {}
 
 		renderKeyPoints(renderer, matrix) {
 
 			if ( ! renderer.noStrokeQuad ) {
-				if ( this.#categoryID === 0 ) {
-					renderer.context.strokeStyle = '#0000ff';
-				} else {
-					renderer.context.strokeStyle = '#ff0000';
-				}
+				renderer.context.strokeStyle = (this.#categoryID === 0 ? '#0000ff' : '#ff0000');
 			}
 
-			if ( this.#categoryID === 0 ) {
-				renderer.context.fillStyle = '#0000ff';
-			} else {
-				renderer.context.fillStyle = '#ff0000';
-			}
+			renderer.context.fillStyle = (this.#categoryID === 0 ? '#0000ff' : '#ff0000');
 
 			// 
-			const points = this.#tiles.keyPoints.map(point => matrix.transformPoint(point));
+			const points = this.#keyPoints.map(point => matrix.transformPoint(point));
 
 			if ( ! renderer.noStrokeQuad ) {
 				const pathQuad = new Path2D();
 				pathQuad.moveTo(points[0].x, points[0].y);
-				for (const { x, y } of points.slice(1)) {
+				for (const { x, y } of points.values().drop(1)) {
 					pathQuad.lineTo(x, y);
 				}
 				pathQuad.closePath();
@@ -179,22 +339,42 @@
 
 			for (const { x, y } of points) {
 				const pathKeyPoint = new Path2D();
-				pathKeyPoint.arc(x, y, renderer.radiusKeyPoint, 0, 2 * Math.PI);
+				pathKeyPoint.arc(x, y, renderer.keyPointRadius, 0, 2 * Math.PI);
 				renderer.context.fill(pathKeyPoint);
 			}
 
 		}
 
-		renderCategoryName(renderer, matrix) {
+		renderText(renderer, matrix, text, { scale = 1 } = {}) {
 
-			// TODO: Supertile で描画したい場合、大きさと位置を変更
-			const fontSize = Matrix.decomposeScale(matrix).y;
-			const { x, y } = matrix.transformPoint(new DOMPointReadOnly(1.15, 1.1));
+			// 
+			const fontSize = scale * this.#textScale * renderer.fontSizeBase;
 
-			renderer.context.fillStyle = '#000000';
 			renderer.context.font = `${fontSize}px serif`;
-			renderer.context.fillText(this.categoryName, x, y);
+			renderer.context.fillStyle = '#000000';
 
+			// 
+			const { x, y } = matrix.transformPoint(this.#textPosition);
+
+			const {
+				actualBoundingBoxAscent,
+				actualBoundingBoxDescent,
+			} = renderer.context.measureText(text);
+
+			renderer.context.fillText(
+				text,
+				x,
+				y + (actualBoundingBoxAscent - actualBoundingBoxDescent) / 2,
+			);
+
+		}
+
+		renderCategoryName(renderer, matrix) {
+			this.renderText(renderer, matrix, Tile.#categoryNames[this.#categoryID]);
+		}
+
+		renderCategoryNames(renderer, matrix) {
+			this.renderCategoryName(renderer, matrix);
 		}
 
 		// TODO: getBounds(matrix)
@@ -202,46 +382,17 @@
 
 	};
 
-	const Tiles = class {
-
-		static #length = 9;
-
-		#array = Array(Tiles.#length);
-
-		#keyPoints;
-
-		static get length() {
-			return this.#length;
-		}
-
-		get keyPoints() {
-			return this.#keyPoints;
-		}
-
-		constructor(keyPoints) {
-			this.#keyPoints = keyPoints;
-		}
-
-		set(categoryID, tile) {
-			this.#array[categoryID] = tile;
-		}
-
-		get(categoryID) {
-			return this.#array[categoryID];
-		}
-
-	};
-
 	const Supertile = class extends Tile {
 
 		#children = [];
 
-		constructor(categoryID, tiles = null) {
-			super(categoryID, tiles);
+		get children() {
+			return this.#children;
 		}
 
-		addChild(tile, matrix) {
-			this.#children.push({ tile, matrix });
+		constructor({ categoryID, keyPoints, textPosition, textScale, children }) {
+			super({ categoryID, keyPoints, textPosition, textScale });
+			this.#children = children;
 		}
 
 		render(renderer, matrix) {
@@ -256,115 +407,82 @@
 			}
 		}
 
+		renderChildCategoryNames(renderer, matrix) {
+			for (const child of this.#children) {
+				child.tile.renderCategoryName(renderer, matrix.multiply(child.matrix));
+			}
+		}
+
+		renderCategoryNames(renderer, matrix) {
+			for (const child of this.#children) {
+				child.tile.renderCategoryNames(renderer, matrix.multiply(child.matrix));
+			}
+		}
+
 	};
 
 	const Spectre = class extends Tile {
 
-		static #keyPointIndices = [3, 5, 7, 11];
+		static #points = [
+			{ x: 0.0, y: 0.0 },
+			{ x: 1.0, y: 0.0 },
+			{ x: 1.5, y: 0.0 - Math.sqrt(3) / 2 },
+			{ x: 1.5 + Math.sqrt(3) / 2, y: 0.5 - Math.sqrt(3) / 2 },
+			{ x: 1.5 + Math.sqrt(3) / 2, y: 1.5 - Math.sqrt(3) / 2 },
+			{ x: 2.5 + Math.sqrt(3) / 2, y: 1.5 - Math.sqrt(3) / 2 },
+			{ x: 3.0 + Math.sqrt(3) / 2, y: 1.5 },
+			{ x: 3.0, y: 2.0 },
+			{ x: 3.0 - Math.sqrt(3) / 2, y: 1.5 },
+			{ x: 2.5 - Math.sqrt(3) / 2, y: 1.5 + Math.sqrt(3) / 2 },
+			{ x: 1.5 - Math.sqrt(3) / 2, y: 1.5 + Math.sqrt(3) / 2 },
+			{ x: 0.5 - Math.sqrt(3) / 2, y: 1.5 + Math.sqrt(3) / 2 },
+			{ x: 0.0 - Math.sqrt(3) / 2, y: 1.5 },
+			{ x: 0.0, y: 1.0 },
+		].map(point => DOMPointReadOnly.fromPoint(point));
 
-		static #points;
-		static #pathStrict;
-		static #path;
+		static #keyPoints = [3, 5, 7, 11].map(i => this.#points[i]);
 
-		#strict;
+		static #textPosition = new DOMPointReadOnly(1.1, 1.1);
 
-		static {
-
-			const points = [
-				{ x: 0.0, y: 0.0 },
-				{ x: 1.0, y: 0.0 },
-				{ x: 1.5, y: 0.0 - Math.sqrt(3) / 2 },
-				{ x: 1.5 + Math.sqrt(3) / 2, y: 0.5 - Math.sqrt(3) / 2 },
-				{ x: 1.5 + Math.sqrt(3) / 2, y: 1.5 - Math.sqrt(3) / 2 },
-				{ x: 2.5 + Math.sqrt(3) / 2, y: 1.5 - Math.sqrt(3) / 2 },
-				{ x: 3.0 + Math.sqrt(3) / 2, y: 1.5 },
-				{ x: 3.0, y: 2.0 },
-				{ x: 3.0 - Math.sqrt(3) / 2, y: 1.5 },
-				{ x: 2.5 - Math.sqrt(3) / 2, y: 1.5 + Math.sqrt(3) / 2 },
-				{ x: 1.5 - Math.sqrt(3) / 2, y: 1.5 + Math.sqrt(3) / 2 },
-				{ x: 0.5 - Math.sqrt(3) / 2, y: 1.5 + Math.sqrt(3) / 2 },
-				{ x: 0.0 - Math.sqrt(3) / 2, y: 1.5 },
-				{ x: 0.0, y: 1.0 },
-			].filter(point => DOMPointReadOnly.fromPoint(point));
-
-			const controlPoints = [
-				{ x: 1 / 3, y: 0.5 },
-				{ x: 1 - 1 / 3, y: 0.5 },
-			].filter(point => DOMPointReadOnly.fromPoint(point));
-
-			// 変換行列: (0, 0) と (1, 0) を入れ替えるような 180 度回転
-			const matrixReverse = new DOMMatrixReadOnly([-1, 0, 0, -1, 1, 0]);
-
-			const pathStrict = new Path2D();
-			pathStrict.moveTo(points[0].x, points[0].y);
-			for (const [i, pointStart] of points.entries()) {
-				const pointEnd = points[i === points.length - 1 ? 0 : i + 1];
-				const matrix = Matrix.IDENTITY
-					.translate(pointStart.x, pointStart.y)
-					.rotateFromVector(
-						pointEnd.x - pointStart.x,
-						pointEnd.y - pointStart.y,
-					)
-					.multiply(i % 2 === 0 ? matrixReverse : Matrix.IDENTITY);
-				const controlPointsTransformed = controlPoints.map(point => matrix.transformPoint(point));
-				const indices = (i % 2 === 0 ? [1, 0] : [0, 1]);
-				pathStrict.bezierCurveTo(
-					controlPointsTransformed[indices[0]].x, controlPointsTransformed[indices[0]].y,
-					controlPointsTransformed[indices[1]].x, controlPointsTransformed[indices[1]].y,
-					pointEnd.x, pointEnd.y,
-				);
-			}
-			pathStrict.closePath();
-
-			const path = new Path2D();
-			path.moveTo(points[0].x, points[0].y);
-			for (const { x, y } of points.slice(1)) {
-				path.lineTo(x, y);
-			}
-			path.closePath();
-
-			// 
-			this.#points = points;
-			this.#pathStrict = pathStrict;
-			this.#path = path;
-
-		}
-
-		static get keyPointIndices() {
-			return this.#keyPointIndices;
-		}
+		#path;
 
 		static get points() {
 			return this.#points;
 		}
 
-		constructor(categoryID, strict = false, tiles = null) {
-			super(categoryID, tiles);
-			this.#strict = strict;
+		static get keyPoints() {
+			return this.#keyPoints;
+		}
+
+		constructor({
+			edgeShape = EdgeShape.LINE,
+			path = null,
+			categoryID = -1,
+			keyPoints = null,
+			textScale = 1,
+		} = {}) {
+			super({ categoryID, keyPoints, textPosition: Spectre.#textPosition, textScale });
+			this.#path = path ?? edgeShape.generatePath(Spectre.points);
 		}
 
 		render(renderer, matrix) {
 
 			if ( ! renderer.noFill ) {
-				if ( this.categoryID === 9 ) {
-					renderer.context.fillStyle = '#a0ffa0';
-				} else if ( this.categoryID === 10 ) {
-					renderer.context.fillStyle = '#80ffff';
-				} else {
-					renderer.context.fillStyle = '#ffffff';
-				}
+				renderer.context.fillStyle = (this.categoryID === 9 ? (
+					'#a0ffa0'
+				) : this.categoryID === 10 ? (
+					'#80ffff'
+				) : (
+					'#ffffff'
+				));
 			}
 
 			const path = new Path2D();
-			path.addPath((this.#strict ? Spectre.#pathStrict : Spectre.#path), matrix);
+			path.addPath(this.#path, matrix);
 			if ( ! renderer.noFill ) {
 				renderer.context.fill(path);
 			}
 			renderer.context.stroke(path);
-
-			if ( ! renderer.noRenderCategoryName ) {
-				this.renderCategoryName(renderer, matrix);
-			}
 
 		}
 
@@ -377,17 +495,23 @@
 			{ categoryID: 10, pointIndex: 8, angle: 30 },
 		];
 
+		static #textPosition = new DOMPointReadOnly(2.15, 2.15);
+
 		#children;
 
-		constructor(strict = false, tiles = null) {
+		get children() {
+			return this.#children;
+		}
 
-			super(0, tiles);
+		constructor({ path, keyPoints, textScale }) {
 
-			this.#children = Mystic.#rulesChild.map(child => {
+			super({ categoryID: 0, keyPoints, textPosition: Mystic.#textPosition, textScale });
 
-				const tile = new Spectre(child.categoryID, strict);
-				const { x, y } = Spectre.points[child.pointIndex];
-				const matrix = Matrix.IDENTITY.translate(x, y).rotate(child.angle);
+			this.#children = Mystic.#rulesChild.map(({ categoryID, pointIndex, angle }) => {
+
+				const tile = new Spectre({ path, categoryID, textScale });
+				const { x, y } = Spectre.points[pointIndex];
+				const matrix = Matrix.IDENTITY.translate(x, y).rotate(angle);
 
 				return { tile, matrix };
 
@@ -401,12 +525,70 @@
 			}
 		}
 
+		renderCategoryNames(renderer, matrix) {
+			for (const child of this.#children) {
+				child.tile.renderCategoryNames(renderer, matrix.multiply(child.matrix));
+			}
+		}
+
+	};
+
+	const Hexagon = class extends Tile {
+
+		static #points = [
+			{ x: 0.0, y: 0.0 },
+			{ x: 1.0, y: 0.0 },
+			{ x: 1.5, y: 0.0 + Math.sqrt(3) / 2 },
+			{ x: 1.0, y: 0.0 + Math.sqrt(3) },
+			{ x: 0.0, y: 0.0 + Math.sqrt(3) },
+			{ x: -0.5, y: 0.0 + Math.sqrt(3) / 2 },
+		].map(point => DOMPointReadOnly.fromPoint(point));
+
+		static #keyPoints = [1, 2, 3, 5].map(i => this.#points[i]);
+
+		static #textPosition = new DOMPointReadOnly(0.5, Math.sqrt(3) / 2);
+
+		static #path = EdgeShape.LINE.generatePath(this.#points);
+
+		static get points() {
+			return this.#points;
+		}
+
+		static get keyPoints() {
+			return this.#keyPoints;
+		}
+
+		constructor({
+			categoryID = -1,
+			keyPoints = null,
+			textScale = 1,
+		} = {}) {
+			super({ categoryID, keyPoints, textPosition: Hexagon.#textPosition, textScale });
+		}
+
+		render(renderer, matrix) {
+
+			if ( ! renderer.noFill ) {
+				renderer.context.fillStyle = (this.categoryID === 0 ? '#80ffff' : '#ffffff');
+			}
+
+			const path = new Path2D();
+			path.addPath(Hexagon.#path, matrix);
+			if ( ! renderer.noFill ) {
+				renderer.context.fill(path);
+			}
+			renderer.context.stroke(path);
+
+		}
+
 	};
 
 	// 
 	// タイル張り
 	// 
-	const Spectres = class extends Tiles {
+	const Tiling = class {
+
+		static #categoryCount = 9;
 
 		static #rulesChildMatrix = [
 			{ sharedKeyPointIndices: [3, 0], angle: 0 },
@@ -438,60 +620,127 @@
 			{ childIndex: 1, keyPointIndex: 1 },
 		];
 
-		static create(strict = false) {
+		#tiles = Array(Tiling.#categoryCount);
 
-			const keyPoints = Spectre.keyPointIndices.map(i => Spectre.points[i]);
+		#keyPoints;
 
-			const tiles = new Spectres(keyPoints);
+		#textScale;
 
-			tiles.set(0, new Mystic(strict, tiles));
-			for (let categoryID = 1; categoryID < Tiles.length; categoryID++) {
-				tiles.set(categoryID, new Spectre(categoryID, strict, tiles));
+		static get categoryCount() {
+			return Tiling.#categoryCount;
+		}
+
+		static createSpectres(edgeShape = EdgeShape.LINE) {
+
+			const path = edgeShape.generatePath(Spectre.points);
+
+			// 
+			const tiling = new Tiling(Spectre.keyPoints, 1);
+
+			tiling.#add(new Mystic({
+				path,
+				keyPoints: tiling.#keyPoints,
+				textScale: tiling.#textScale,
+			}));
+			for (let categoryID = 1; categoryID < Tiling.#categoryCount; categoryID++) {
+				tiling.#add(new Spectre({
+					path,
+					categoryID,
+					keyPoints: tiling.#keyPoints,
+					textScale: tiling.#textScale,
+				}));
 			}
 
-			return tiles;
+			return tiling;
 
+		}
+
+		static createHexagons() {
+
+			const tiling = new Tiling(Hexagon.keyPoints, 1);
+
+			for (let categoryID = 0; categoryID < Tiling.#categoryCount; categoryID++) {
+				tiling.#add(new Hexagon({
+					categoryID,
+					keyPoints: tiling.#keyPoints,
+					textScale: tiling.#textScale,
+				}));
+			}
+
+			return tiling;
+
+		}
+
+		static #areaOfQuad(points) {
+			return Math.abs(
+				points[0].x * points[1].y - points[1].x * points[0].y +
+				points[1].x * points[2].y - points[2].x * points[1].y +
+				points[2].x * points[3].y - points[3].x * points[2].y +
+				points[3].x * points[0].y - points[0].x * points[3].y
+			) / 2;
+		}
+
+		constructor(keyPoints, textScale) {
+			this.#keyPoints = keyPoints;
+			this.#textScale = textScale;
+		}
+
+		#add(tile) {
+			this.#tiles[tile.categoryID] = tile;
+		}
+
+		get(categoryID) {
+			return this.#tiles[categoryID];
 		}
 
 		#generateChildMatrices() {
 
-			const matricesChildBase = [];
+			// メモ: array.values().map(f)
+			const rulesIterator = Tiling.#rulesChildMatrix.values()
+				.map(({ sharedKeyPointIndices, angle }) => ({
+					matrixRotation: Matrix.IDENTITY.rotate(angle),
+					sharedKeyPoints: sharedKeyPointIndices.map(i => this.#keyPoints[i]),
+				}));
 
-			let point;
+			// メモ: array.values() の場合は take(1) を配列に変換すると done にならない
+			//       array.values().map(f) の場合は take(1) を配列に変換すると done になる
+			const first = rulesIterator.take(1)
+				.map(({ matrixRotation, sharedKeyPoints }) => ({
+					matrix: Matrix.FLIPPING.multiply(matrixRotation),
+					point: matrixRotation.transformPoint(sharedKeyPoints[1]),
+				}))
+				.next().value;
 
-			for (const [childIndex, ruleChildMatrix] of Spectres.#rulesChildMatrix.entries()) {
+			const matricesChild = rulesIterator
+				.reduce(({ matrices, point }, { matrixRotation, sharedKeyPoints }) => {
 
-				const { sharedKeyPointIndices, angle } = ruleChildMatrix;
+					const sharedKeyPointRotated = matrixRotation.transformPoint(sharedKeyPoints[0]);
 
-				// 変換行列: 回転
-				const matrixRotation = Matrix.IDENTITY.rotate(angle);
+					// 変換行列: 移動
+					const matrixTranslation = Matrix.IDENTITY.translate(
+						point.x - sharedKeyPointRotated.x,
+						point.y - sharedKeyPointRotated.y,
+					);
 
-				const sharedKeyPoints = sharedKeyPointIndices.map(i => this.keyPoints[i]);
-				const sharedKeyPointsRotated = sharedKeyPoints
-					.map(sharedKeyPoint => matrixRotation.transformPoint(sharedKeyPoint));
+					// 変換行列: 回転, 移動
+					const matrixBase = matrixTranslation.multiply(matrixRotation);
 
-				if ( childIndex === 0) {
-					point = sharedKeyPointsRotated[1];
-					matricesChildBase.push(matrixRotation);
-					continue;
-				}
+					// 変換行列: 回転, 移動, 反転
+					const matrix = Matrix.FLIPPING.multiply(matrixBase);
 
-				// 変換行列: 移動
-				const matrixTranslation = Matrix.IDENTITY.translate(
-					point.x - sharedKeyPointsRotated[0].x,
-					point.y - sharedKeyPointsRotated[0].y,
-				);
+					// 
+					matrices.push(matrix);
 
-				// 変換行列: 回転, 移動
-				const matrix = matrixTranslation.multiply(matrixRotation);
+					return {
+						matrices,
+						point: matrixBase.transformPoint(sharedKeyPoints[1]),
+					};
 
-				point = matrix.transformPoint(sharedKeyPoints[1]);
-				matricesChildBase.push(matrix);
-
-			}
-
-			// 変換行列: 回転, 移動, 反転
-			const matricesChild = matricesChildBase.map(matrix => Matrix.FLIPPING.multiply(matrix));
+				}, {
+					matrices: [first.matrix],
+					point: first.point,
+				})
+				.matrices;
 
 			return matricesChild;
 
@@ -499,10 +748,10 @@
 
 		#generateKeyPoints(matricesChild) {
 
-			return Spectres.#rulesKeyPoint.map(({ childIndex, keyPointIndex }) => {
+			return Tiling.#rulesKeyPoint.map(({ childIndex, keyPointIndex }) => {
 
 				const matrixChild = matricesChild[childIndex];
-				const keyPointChild = this.keyPoints[keyPointIndex];
+				const keyPointChild = this.#keyPoints[keyPointIndex];
 
 				return matrixChild.transformPoint(keyPointChild);
 
@@ -510,20 +759,43 @@
 
 		}
 
-		#createSupertile(categoryID, matricesChild, tiles) {
+		#generateCategoryNamePoint(matricesChild) {
 
-			const ruleChildCategory = Spectres.#rulesChildCategory[categoryID];
+			const points = Tiling.#rulesChildMatrix
+				.map(({ sharedKeyPointIndices }, childIndex) => {
 
-			// 
-			const supertile = new Supertile(categoryID, tiles);
+					const matrixChild = matricesChild[childIndex];
+					const keyPointChild = this.#keyPoints[sharedKeyPointIndices[0]];
 
-			for (const [childIndex, categoryIDChild] of ruleChildCategory.entries()) {
-				if ( categoryIDChild >= 0 ) {
-					supertile.addChild(this.get(categoryIDChild), matricesChild[childIndex]);
-				}
-			}
+					return matrixChild.transformPoint(keyPointChild);
 
-			return supertile;
+				});
+
+			const x = points.reduce((sum, { x }) => sum + x, 0) / points.length;
+			const y = points.reduce((sum, { y }) => sum + y, 0) / points.length;
+
+			return new DOMPointReadOnly(x, y);
+
+		}
+
+		#generateCategoryNameScale(keyPoints) {
+
+			const areaChild = Tiling.#areaOfQuad(this.#keyPoints);
+			const area = Tiling.#areaOfQuad(keyPoints);
+
+			return Math.sqrt(area / areaChild) * this.#textScale;
+
+		}
+
+		#generateChildren(categoryID, matricesChild) {
+
+			return Tiling.#rulesChildCategory[categoryID].entries()
+				.filter(([, categoryIDChild]) => categoryIDChild >= 0)
+				.map(([childIndex, categoryIDChild]) => ({
+					tile: this.get(categoryIDChild),
+					matrix: matricesChild[childIndex],
+				}))
+				.toArray();
 
 		}
 
@@ -531,19 +803,24 @@
 
 			const matricesChild = this.#generateChildMatrices();
 
-			const keyPoints = this.#generateKeyPoints(matricesChild);
-
 			// 
-			const tiles = new Spectres(keyPoints);
+			const keyPoints = this.#generateKeyPoints(matricesChild);
+			const textPosition = this.#generateCategoryNamePoint(matricesChild);
+			const textScale = this.#generateCategoryNameScale(keyPoints);
 
-			for (let categoryID = 0; categoryID < Tiles.length; categoryID++) {
-				tiles.set(
+			const tiling = new Tiling(keyPoints, textScale);
+
+			for (let categoryID = 0; categoryID < Tiling.#categoryCount; categoryID++) {
+				tiling.#add(new Supertile({
 					categoryID,
-					this.#createSupertile(categoryID, matricesChild, tiles)
-				);
+					keyPoints: tiling.#keyPoints,
+					textPosition,
+					textScale: tiling.#textScale,
+					children: this.#generateChildren(categoryID, matricesChild),
+				}));
 			}
 
-			return tiles;
+			return tiling;
 
 		}
 
@@ -552,8 +829,10 @@
 	window.Monotile = {
 		Matrix,
 		Renderer,
-		Tile, Tiles, Supertile, Spectre, Mystic,
-		Spectres,
+		// TODO: EdgePath,
+		EdgeShape,
+		Tile, Supertile, Spectre, Mystic, Hexagon,
+		Tiling,
 	};
 
 })();
