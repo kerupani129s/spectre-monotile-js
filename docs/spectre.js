@@ -627,7 +627,7 @@
 		#textScale;
 
 		static get categoryCount() {
-			return Tiling.#categoryCount;
+			return this.#categoryCount;
 		}
 
 		static createSpectres(edgeShape = EdgeShape.LINE) {
