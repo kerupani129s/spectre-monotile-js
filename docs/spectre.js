@@ -159,17 +159,48 @@
 	// 
 	const EdgePath = class {
 
-		// TODO: 仮
-		#joinPath;
+		joinPath(path, pointStart, pointEnd, reversed) {}
 
-		// TODO: 仮
-		set(joinPath) {
-			this.#joinPath = joinPath;
+	};
+
+	const Line = class extends EdgePath {
+
+		joinPath(path, pointStart, pointEnd, reversed) {
+			path.lineTo(pointEnd.x, pointEnd.y);
+		}
+
+	};
+
+	const BezierCurve = class extends EdgePath {
+
+		// 変換行列: (0, 0) と (1, 0) を入れ替えるような 180 度回転
+		static #matrixReversing = new DOMMatrixReadOnly([-1, 0, 0, -1, 1, 0]);
+
+		#pointsControl;
+
+		constructor(pointsControl = null) {
+			super();
+			this.#pointsControl = pointsControl;
 		}
 
 		joinPath(path, pointStart, pointEnd, reversed) {
-			// TODO: 仮
-			this.#joinPath(path, pointStart, pointEnd, reversed);
+
+			const matrix = Matrix.IDENTITY
+				.translate(pointStart.x, pointStart.y)
+				.rotateFromVector(
+					pointEnd.x - pointStart.x,
+					pointEnd.y - pointStart.y,
+				)
+				.multiply(reversed ? BezierCurve.#matrixReversing : Matrix.IDENTITY);
+			const pointsControl = this.#pointsControl.map(point => matrix.transformPoint(point));
+			const indices = (reversed ? [1, 0] : [0, 1]);
+
+			path.bezierCurveTo(
+				pointsControl[indices[0]].x, pointsControl[indices[0]].y,
+				pointsControl[indices[1]].x, pointsControl[indices[1]].y,
+				pointEnd.x, pointEnd.y,
+			);
+
 		}
 
 	};
@@ -189,9 +220,17 @@
 			return this.#bezierCurve;
 		}
 
-		static init({ line, bezierCurve }) {
-			this.#line = line;
-			this.#bezierCurve = bezierCurve;
+		static {
+
+			this.#line = new this(new Line());
+
+			this.#bezierCurve = new this(new BezierCurve(
+				[
+					{ x: 1 / 3, y: 0.5 },
+					{ x: 1 - 1 / 3, y: 0.5 },
+				].map(point => DOMPointReadOnly.fromPoint(point)),
+			));
+
 		}
 
 		constructor(edgePath) {
@@ -216,77 +255,6 @@
 		}
 
 	};
-
-	const Line = class extends EdgeShape {
-
-		constructor() {
-
-			const edgePath = new EdgePath();
-
-			// TODO: 仮
-			edgePath.set((path, pointStart, pointEnd, reversed) => (
-				this.#joinPath(path, pointStart, pointEnd, reversed)
-			));
-
-			super(edgePath);
-
-		}
-
-		#joinPath(path, pointStart, pointEnd, reversed) {
-			path.lineTo(pointEnd.x, pointEnd.y);
-		}
-
-	};
-
-	const BezierCurve = class extends EdgeShape {
-
-		// 変換行列: (0, 0) と (1, 0) を入れ替えるような 180 度回転
-		static #matrixReversing = new DOMMatrixReadOnly([-1, 0, 0, -1, 1, 0]);
-
-		static #controlPoints = [
-			{ x: 1 / 3, y: 0.5 },
-			{ x: 1 - 1 / 3, y: 0.5 },
-		].map(point => DOMPointReadOnly.fromPoint(point));
-
-		constructor() {
-
-			const edgePath = new EdgePath();
-
-			// TODO: 仮
-			edgePath.set((path, pointStart, pointEnd, reversed) => (
-				this.#joinPath(path, pointStart, pointEnd, reversed)
-			));
-
-			super(edgePath);
-
-		}
-
-		#joinPath(path, pointStart, pointEnd, reversed) {
-
-			const matrix = Matrix.IDENTITY
-				.translate(pointStart.x, pointStart.y)
-				.rotateFromVector(
-					pointEnd.x - pointStart.x,
-					pointEnd.y - pointStart.y,
-				)
-				.multiply(reversed ? BezierCurve.#matrixReversing : Matrix.IDENTITY);
-			const controlPoints = BezierCurve.#controlPoints.map(point => matrix.transformPoint(point));
-			const indices = (reversed ? [1, 0] : [0, 1]);
-
-			path.bezierCurveTo(
-				controlPoints[indices[0]].x, controlPoints[indices[0]].y,
-				controlPoints[indices[1]].x, controlPoints[indices[1]].y,
-				pointEnd.x, pointEnd.y,
-			);
-
-		}
-
-	};
-
-	EdgeShape.init({
-		line: new Line(),
-		bezierCurve: new BezierCurve(),
-	});
 
 	// 
 	// タイル
