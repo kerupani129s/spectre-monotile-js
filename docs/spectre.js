@@ -176,16 +176,22 @@
 
 	const EdgeShape = class {
 
+		static #line;
+		static #bezierCurve;
+
 		#edgePath;
 
 		static get LINE() {
-			// メモ: 後で定義
-			return line;
+			return this.#line;
 		}
 
 		static get BEZIER_CURVE() {
-			// メモ: 後で定義
-			return bezierCurve;
+			return this.#bezierCurve;
+		}
+
+		static init({ line, bezierCurve }) {
+			this.#line = line;
+			this.#bezierCurve = bezierCurve;
 		}
 
 		constructor(edgePath) {
@@ -277,9 +283,10 @@
 
 	};
 
-	// メモ: EdgeShape の初期化完了前に EdgeShape のプロパティに代入することは不可
-	const line = new Line();
-	const bezierCurve = new BezierCurve();
+	EdgeShape.init({
+		line: new Line(),
+		bezierCurve: new BezierCurve(),
+	});
 
 	// 
 	// タイル
