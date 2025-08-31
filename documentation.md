@@ -10,6 +10,7 @@
 static get IDENTITY()
 static get FLIPPING()
 
+static extractPosition(matrix)
 static extractScale(matrix)
 ```
 
