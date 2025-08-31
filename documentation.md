@@ -29,7 +29,6 @@ noStrokeQuad
 get canvas()
 
 get width()
-
 get height()
 
 set matrix(matrix)
