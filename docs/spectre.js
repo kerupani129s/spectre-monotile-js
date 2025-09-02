@@ -157,48 +157,67 @@
 	// 
 	// 辺の形状
 	// 
-	const EdgePath = class {
+	const Segment = class {
 
-		joinPath(path, pointStart, pointEnd, reversed) {}
+		#lastPoint;
+
+		get lastPoint() {
+			return this.#lastPoint;
+		}
+
+		constructor(lastPoint) {
+			this.#lastPoint = lastPoint;
+		}
+
+		join(path, matrix, reversed) {}
 
 	};
 
-	const Line = class extends EdgePath {
+	const Line = class extends Segment {
 
-		joinPath(path, pointStart, pointEnd, reversed) {
-			path.lineTo(pointEnd.x, pointEnd.y);
+		#startPoint;
+		#endPoint;
+
+		constructor(startPoint, endPoint) {
+			super(endPoint);
+			this.#startPoint = startPoint;
+			this.#endPoint = endPoint;
+		}
+
+		join(path, matrix, reversed) {
+			const endPoint = matrix.transformPoint(reversed ? this.#startPoint : this.#endPoint);
+			path.lineTo(endPoint.x, endPoint.y);
 		}
 
 	};
 
-	const BezierCurve = class extends EdgePath {
+	const BezierCurve = class extends Segment {
 
-		// 変換行列: (0, 0) と (1, 0) を入れ替えるような 180 度回転
-		static #matrixReversing = new DOMMatrixReadOnly([-1, 0, 0, -1, 1, 0]);
+		#startPoint;
+		#controlPoint1;
+		#controlPoint2;
+		#endPoint;
 
-		#pointsControl;
-
-		constructor(pointsControl = null) {
-			super();
-			this.#pointsControl = pointsControl;
+		constructor(startPoint, controlPoint1, controlPoint2, endPoint) {
+			super(endPoint);
+			this.#startPoint = startPoint;
+			this.#controlPoint1 = controlPoint1;
+			this.#controlPoint2 = controlPoint2;
+			this.#endPoint = endPoint;
 		}
 
-		joinPath(path, pointStart, pointEnd, reversed) {
+		join(path, matrix, reversed) {
 
-			const matrix = Matrix.IDENTITY
-				.translate(pointStart.x, pointStart.y)
-				.rotateFromVector(
-					pointEnd.x - pointStart.x,
-					pointEnd.y - pointStart.y,
-				)
-				.multiply(reversed ? BezierCurve.#matrixReversing : Matrix.IDENTITY);
-			const pointsControl = this.#pointsControl.map(point => matrix.transformPoint(point));
-			const indices = (reversed ? [1, 0] : [0, 1]);
+			const [controlPoint1, controlPoint2, endPoint] = (reversed ? (
+				[this.#controlPoint2, this.#controlPoint1, this.#startPoint]
+			) : (
+				[this.#controlPoint1, this.#controlPoint2, this.#endPoint]
+			)).map(point => matrix.transformPoint(point));
 
 			path.bezierCurveTo(
-				pointsControl[indices[0]].x, pointsControl[indices[0]].y,
-				pointsControl[indices[1]].x, pointsControl[indices[1]].y,
-				pointEnd.x, pointEnd.y,
+				controlPoint1.x, controlPoint1.y,
+				controlPoint2.x, controlPoint2.y,
+				endPoint.x, endPoint.y,
 			);
 
 		}
@@ -207,10 +226,14 @@
 
 	const EdgeShape = class {
 
-		static #line;
-		static #bezierCurve;
+		// 変換行列: (0, 0) と (1, 0) を入れ替えるような 180 度回転
+		static #matrixReversing = new DOMMatrixReadOnly([-1, 0, 0, -1, 1, 0]);
 
-		#edgePath;
+		static #line = new this().#closePath();
+		static #bezierCurve = new this().#bezierCurveTo(1 / 3, 0.5, 2 / 3, 0.5, 1, 0);
+
+		#lastPoint = new DOMPointReadOnly(0, 0);
+		#segments = [];
 
 		static get LINE() {
 			return this.#line;
@@ -220,21 +243,31 @@
 			return this.#bezierCurve;
 		}
 
-		static {
-
-			this.#line = new this(new Line());
-
-			this.#bezierCurve = new this(new BezierCurve(
-				[
-					{ x: 1 / 3, y: 0.5 },
-					{ x: 1 - 1 / 3, y: 0.5 },
-				].map(point => DOMPointReadOnly.fromPoint(point)),
-			));
-
+		#closePath() {
+			const segment = new Line(
+				this.#lastPoint,
+				new DOMPointReadOnly(1, 0),
+			);
+			this.#segments.push(segment);
+			this.#lastPoint = segment.lastPoint;
+			return this;
 		}
 
-		constructor(edgePath) {
-			this.#edgePath = edgePath;
+		#bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y) {
+			const segment = new BezierCurve(
+				this.#lastPoint,
+				new DOMPointReadOnly(cp1x, cp1y),
+				new DOMPointReadOnly(cp2x, cp2y),
+				new DOMPointReadOnly(x, y),
+			);
+			this.#segments.push(segment);
+			this.#lastPoint = segment.lastPoint;
+			return this;
+		}
+
+		#join(path, matrix, reversed) {
+			// TODO: 
+			this.#segments[0].join(path, matrix, reversed);
 		}
 
 		generatePath(points) {
@@ -243,9 +276,22 @@
 
 			path.moveTo(points[0].x, points[0].y);
 
-			for (const [i, pointStart] of points.entries()) {
-				const pointEnd = points[i === points.length - 1 ? 0 : i + 1];
-				this.#edgePath.joinPath(path, pointStart, pointEnd, i % 2 === 0);
+			for (const [i, startPoint] of points.entries()) {
+
+				const endPoint = points[i === points.length - 1 ? 0 : i + 1];
+
+				const reversed = i % 2 === 0;
+
+				const matrix = Matrix.IDENTITY
+					.translate(startPoint.x, startPoint.y)
+					.rotateFromVector(
+						endPoint.x - startPoint.x,
+						endPoint.y - startPoint.y,
+					)
+					.multiply(reversed ? EdgeShape.#matrixReversing : Matrix.IDENTITY);
+
+				this.#join(path, matrix, reversed);
+
 			}
 
 			path.closePath();
@@ -804,7 +850,6 @@
 	window.Monotile = {
 		Matrix,
 		Renderer,
-		// TODO: EdgePath,
 		EdgeShape,
 		Tile, Supertile, Spectre, Mystic, Hexagon,
 		Tiling,
