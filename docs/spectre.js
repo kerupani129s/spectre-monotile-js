@@ -229,8 +229,8 @@
 		// 変換行列: (0, 0) と (1, 0) を入れ替えるような 180 度回転
 		static #matrixReversing = new DOMMatrixReadOnly([-1, 0, 0, -1, 1, 0]);
 
-		static #line = new this().#closePath();
-		static #bezierCurve = new this().#bezierCurveTo(1 / 3, 0.5, 2 / 3, 0.5, 1, 0);
+		static #line = new this().#closePath().#freeze();
+		static #bezierCurve = new this().#bezierCurveTo(1 / 3, 0.5, 2 / 3, 0.5, 1, 0).#freeze();
 
 		#lastPoint = new DOMPointReadOnly(0, 0);
 		#segments = [];
@@ -263,6 +263,11 @@
 			this.#segments.push(segment);
 			this.#lastPoint = segment.lastPoint;
 			return this;
+		}
+
+		#freeze() {
+			Object.freeze(this.#segments);
+			return Object.freeze(this);
 		}
 
 		#join(path, matrix, reversed) {
@@ -405,7 +410,7 @@
 
 	const Supertile = class extends Tile {
 
-		#children = [];
+		#children;
 
 		get children() {
 			return this.#children;
@@ -413,7 +418,7 @@
 
 		constructor({ categoryID, keyPoints, textPosition, textScale, children }) {
 			super({ categoryID, keyPoints, textPosition, textScale });
-			this.#children = children;
+			this.#children = Object.freeze(children);
 		}
 
 		render(renderer, matrix) {
@@ -444,7 +449,7 @@
 
 	const Spectre = class extends Tile {
 
-		static #points = [
+		static #points = Object.freeze([
 			{ x: 0.0, y: 0.0 },
 			{ x: 1.0, y: 0.0 },
 			{ x: 1.5, y: 0.0 - Math.sqrt(3) / 2 },
@@ -459,9 +464,9 @@
 			{ x: 0.5 - Math.sqrt(3) / 2, y: 1.5 + Math.sqrt(3) / 2 },
 			{ x: 0.0 - Math.sqrt(3) / 2, y: 1.5 },
 			{ x: 0.0, y: 1.0 },
-		].map(point => DOMPointReadOnly.fromPoint(point));
+		].map(point => DOMPointReadOnly.fromPoint(point)));
 
-		static #keyPoints = [3, 5, 7, 11].map(i => this.#points[i]);
+		static #keyPoints = Object.freeze([3, 5, 7, 11].map(i => this.#points[i]));
 
 		static #textPosition = new DOMPointReadOnly(1.1, 1.1);
 
@@ -528,15 +533,15 @@
 
 			super({ categoryID: 0, keyPoints, textPosition: Mystic.#textPosition, textScale });
 
-			this.#children = Mystic.#rulesChild.map(({ categoryID, pointIndex, angle }) => {
+			this.#children = Object.freeze(Mystic.#rulesChild.map(({ categoryID, pointIndex, angle }) => {
 
 				const tile = new Spectre({ path, categoryID, textScale });
 				const { x, y } = Spectre.points[pointIndex];
 				const matrix = Matrix.IDENTITY.translate(x, y).rotate(angle);
 
-				return { tile, matrix };
+				return Object.freeze({ tile, matrix });
 
-			});
+			}));
 
 		}
 
@@ -556,16 +561,16 @@
 
 	const Hexagon = class extends Tile {
 
-		static #points = [
+		static #points = Object.freeze([
 			{ x: 0.0, y: 0.0 },
 			{ x: 1.0, y: 0.0 },
 			{ x: 1.5, y: 0.0 + Math.sqrt(3) / 2 },
 			{ x: 1.0, y: 0.0 + Math.sqrt(3) },
 			{ x: 0.0, y: 0.0 + Math.sqrt(3) },
 			{ x: -0.5, y: 0.0 + Math.sqrt(3) / 2 },
-		].map(point => DOMPointReadOnly.fromPoint(point));
+		].map(point => DOMPointReadOnly.fromPoint(point)));
 
-		static #keyPoints = [1, 2, 3, 5].map(i => this.#points[i]);
+		static #keyPoints = Object.freeze([1, 2, 3, 5].map(i => this.#points[i]));
 
 		static #textPosition = new DOMPointReadOnly(0.5, Math.sqrt(3) / 2);
 
@@ -812,7 +817,7 @@
 
 			return Tiling.#rulesChildCategory[categoryID].entries()
 				.filter(([, categoryIDChild]) => categoryIDChild >= 0)
-				.map(([childIndex, categoryIDChild]) => ({
+				.map(([childIndex, categoryIDChild]) => Object.freeze({
 					tile: this.get(categoryIDChild),
 					matrix: matricesChild[childIndex],
 				}))
