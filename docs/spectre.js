@@ -270,9 +270,21 @@
 			return Object.freeze(this);
 		}
 
+		* #segmentValues(reversed) {
+			const array = this.#segments;
+			if ( reversed ) {
+				for (let i = array.length - 1; i >= 0; i--) {
+					yield array[i];
+				}
+			} else {
+				yield* array;
+			}
+		}
+
 		#join(path, matrix, reversed) {
-			// TODO: 
-			this.#segments[0].join(path, matrix, reversed);
+			for (const segment of this.#segmentValues(reversed)) {
+				segment.join(path, matrix, reversed);
+			}
 		}
 
 		generatePath(points) {
