@@ -24,12 +24,33 @@
 
 		static extractScale(matrix) {
 
-			// [c, s, - s, c, 0, 0] [x, 0, 0, y, 0, 0] = [c x, s x, - s y, c y, 0, 0]
-			// sqrt((  c x) ^ 2 + (s x) ^ 2) = sqrt(c ^ 2 + s ^ 2) x = x
-			// sqrt((- s y) ^ 2 + (c y) ^ 2) = sqrt(s ^ 2 + c ^ 2) y = y
+			// [a, b, c, d] = [cos(ay), sin(ay), sin(ax), cos(ax)] [sx, 0, 0, sy]
+			//              = [sx cos(ay), sx sin(ay), sy sin(ax), sy cos(ax)]
+			// sx = sqrt(a ^ 2 + b ^ 2) = sx sqrt(cos(ay) ^ 2 + sin(ay) ^ 2)
+			// sy = sqrt(c ^ 2 + d ^ 2) = sy sqrt(sin(ax) ^ 2 + cos(ax) ^ 2)
+
 			return {
 				x: Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b),
 				y: Math.sqrt(matrix.c * matrix.c + matrix.d * matrix.d),
+			};
+
+		}
+
+		static extractSkew(matrix) {
+
+			// [a, b, c, d] = [cos(ay), sin(ay), sin(ax), cos(ax)] [sx, 0, 0, sy]
+			//              = [sx cos(ay), sx sin(ay), sy sin(ax), sy cos(ax)]
+			// ax = arctan(c / d) = arctan(sin(ax) / cos(ax)) = arctan(tan(ax))
+			// ay = arctan(b / a) = arctan(sin(ay) / cos(ay)) = arctan(tan(ay))
+
+			// [a, b, c, d] = [1, tan(ay), tan(ax), 1] [sx', 0, 0, sy']
+			//              = [sx', sx'tan(ay), sy' tan(ax), sy']
+			// ax = arctan(c / d) = arctan(tan(ax))
+			// ay = arctan(b / a) = arctan(tan(ay))
+
+			return {
+				x: Math.atan2(matrix.c, matrix.d),
+				y: Math.atan2(matrix.b, matrix.a),
 			};
 
 		}

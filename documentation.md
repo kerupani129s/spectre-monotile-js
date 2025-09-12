@@ -12,6 +12,7 @@ static get FLIPPING()
 
 static extractPosition(matrix)
 static extractScale(matrix)
+static extractSkew(matrix)
 ```
 
 ## Rendering
