@@ -271,9 +271,13 @@
 		}
 
 		#closePath() {
+			return this.#lineTo(1, 0);
+		}
+
+		#lineTo(x, y) {
 			return this.#addSegment(new Line(
 				this.#lastPoint,
-				new DOMPointReadOnly(1, 0),
+				new DOMPointReadOnly(x, y),
 			));
 		}
 
