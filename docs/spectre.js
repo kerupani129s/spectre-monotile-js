@@ -180,15 +180,7 @@
 	// 
 	const Segment = class {
 
-		#lastPoint;
-
-		get lastPoint() {
-			return this.#lastPoint;
-		}
-
-		constructor(lastPoint) {
-			this.#lastPoint = lastPoint;
-		}
+		getLastPoint() {}
 
 		join(path, matrix, reversed) {}
 
@@ -200,9 +192,13 @@
 		#endPoint;
 
 		constructor(startPoint, endPoint) {
-			super(endPoint);
+			super();
 			this.#startPoint = startPoint;
 			this.#endPoint = endPoint;
+		}
+
+		getLastPoint() {
+			return this.#endPoint;
 		}
 
 		join(path, matrix, reversed) {
@@ -220,11 +216,15 @@
 		#endPoint;
 
 		constructor(startPoint, controlPoint1, controlPoint2, endPoint) {
-			super(endPoint);
+			super();
 			this.#startPoint = startPoint;
 			this.#controlPoint1 = controlPoint1;
 			this.#controlPoint2 = controlPoint2;
 			this.#endPoint = endPoint;
+		}
+
+		getLastPoint() {
+			return this.#endPoint;
 		}
 
 		join(path, matrix, reversed) {
@@ -270,7 +270,7 @@
 				new DOMPointReadOnly(1, 0),
 			);
 			this.#segments.push(segment);
-			this.#lastPoint = segment.lastPoint;
+			this.#lastPoint = segment.getLastPoint();
 			return this;
 		}
 
@@ -282,7 +282,7 @@
 				new DOMPointReadOnly(x, y),
 			);
 			this.#segments.push(segment);
-			this.#lastPoint = segment.lastPoint;
+			this.#lastPoint = segment.getLastPoint();
 			return this;
 		}
 
