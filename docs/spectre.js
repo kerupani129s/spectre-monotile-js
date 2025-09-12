@@ -1,8 +1,20 @@
 (() => {
 
 	// 
-	// 行列
+	// 数学
 	// 
+	const Vector = class {
+
+		static magnitude(v) {
+			return Math.sqrt(v.x * v.x + v.y * v.y);
+		}
+
+		static dot(u, v) {
+			return u.x * v.x + u.y * v.y;
+		}
+
+	};
+
 	const Matrix = class {
 
 		static #identity = new DOMMatrixReadOnly();
@@ -245,13 +257,281 @@
 
 	};
 
+	const QuadraticCurve = class extends Segment {
+
+		#startPoint;
+		#controlPoint;
+		#endPoint;
+
+		constructor(startPoint, controlPoint, endPoint) {
+			super();
+			this.#startPoint = startPoint;
+			this.#controlPoint = controlPoint;
+			this.#endPoint = endPoint;
+		}
+
+		getLastPoint() {
+			return this.#endPoint;
+		}
+
+		join(path, matrix, reversed) {
+
+			const [controlPoint, endPoint] = (reversed ? (
+				[this.#controlPoint, this.#startPoint]
+			) : (
+				[this.#controlPoint, this.#endPoint]
+			)).map(point => matrix.transformPoint(point));
+
+			path.quadraticCurveTo(
+				controlPoint.x, controlPoint.y,
+				endPoint.x, endPoint.y,
+			);
+
+		}
+
+	};
+
+	const Arc = class extends Segment {
+
+		#startPoint;
+		#centerPoint;
+
+		#radius;
+
+		#startAngle;
+		#endAngle;
+
+		#counterclockwise;
+
+		constructor(startPoint, centerPoint, radius, startAngle, endAngle, counterclockwise) {
+			super();
+			this.#startPoint = startPoint;
+			this.#centerPoint = centerPoint;
+			this.#radius = radius;
+			this.#startAngle = startAngle;
+			this.#endAngle = endAngle;
+			this.#counterclockwise = counterclockwise;
+		}
+
+		getLastPoint() {
+
+			const centerPoint = this.#centerPoint;
+			const radius = this.#radius;
+			const endAngle = this.#endAngle;
+
+			return new DOMPointReadOnly(
+				centerPoint.x + radius * Math.cos(endAngle),
+				centerPoint.y + radius * Math.sin(endAngle),
+			);
+
+		}
+
+		join(path, matrix, reversed) {
+
+			const centerPoint = matrix.transformPoint(this.#centerPoint);
+
+			const radius = this.#radius;
+
+			// メモ: EdgeShape 用の matrix のため、rotate と translate のみしている
+			//       angle' = - skewX = skewY
+			const skewY = Matrix.extractSkew(matrix).y;
+			const [startAngle, endAngle] = (reversed ? (
+				[this.#endAngle, this.#startAngle]
+			) : (
+				[this.#startAngle, this.#endAngle]
+			)).map(angle => angle + skewY);
+
+			// counterclockwise = (reversed ? ! this.#counterclockwise : this.#counterclockwise)
+			const counterclockwise = reversed !== this.#counterclockwise;
+
+			path.arc(
+				centerPoint.x, centerPoint.y,
+				radius,
+				startAngle, endAngle,
+				counterclockwise,
+			);
+
+			if ( reversed ) {
+				const endPoint = matrix.transformPoint(this.#startPoint);
+				path.lineTo(endPoint.x, endPoint.y);
+			}
+
+		}
+
+	};
+
+	const ArcTo = class extends Segment {
+
+		#startPoint;
+		#controlPoint1;
+		#controlPoint2;
+
+		#radius;
+
+		constructor(startPoint, controlPoint1, controlPoint2, radius) {
+			super();
+			this.#startPoint = startPoint;
+			this.#controlPoint1 = controlPoint1;
+			this.#controlPoint2 = controlPoint2;
+			this.#radius = radius;
+		}
+
+		getLastPoint() {
+
+			const points = [this.#startPoint, this.#controlPoint1, this.#controlPoint2];
+			const radius = this.#radius;
+
+			// 
+			const u = { x: points[0].x - points[1].x, y: points[0].y - points[1].y };
+			const v = { x: points[2].x - points[1].x, y: points[2].y - points[1].y };
+
+			const mu = Vector.magnitude(u);
+			const mv = Vector.magnitude(v);
+
+			const c = Vector.dot(u, v) / (mu * mv);
+
+			if ( 1 + c < Number.EPSILON || 1 - c < Number.EPSILON ) {
+				return points[1];
+			} else {
+
+				const mt = radius / Math.tan(Math.acos(c) / 2);
+
+				const t = { x: mt * v.x / mv, y: mt * v.y / mv };
+
+				return new DOMPointReadOnly(points[1].x + t.x, points[1].y + t.y);
+
+			}
+
+		}
+
+		join(path, matrix, reversed) {
+
+			const [controlPoint1, controlPoint2] = (reversed ? (
+				[this.#controlPoint1, this.#startPoint]
+			) : (
+				[this.#controlPoint1, this.#controlPoint2]
+			)).map(point => matrix.transformPoint(point));
+
+			const radius = this.#radius;
+
+			path.arcTo(
+				controlPoint1.x, controlPoint1.y,
+				controlPoint2.x, controlPoint2.y,
+				radius,
+			);
+
+			if ( reversed ) {
+				const endPoint = matrix.transformPoint(this.#startPoint);
+				path.lineTo(endPoint.x, endPoint.y);
+			}
+
+		}
+
+	};
+
+	const Ellipse = class extends Segment {
+
+		#startPoint;
+		#centerPoint;
+
+		#radiusX;
+		#radiusY;
+
+		#rotation;
+
+		#startAngle;
+		#endAngle;
+
+		#counterclockwise;
+
+		constructor(
+			startPoint,
+			centerPoint,
+			radiusX, radiusY,
+			rotation,
+			startAngle, endAngle,
+			counterclockwise,
+		) {
+			super();
+			this.#startPoint = startPoint;
+			this.#centerPoint = centerPoint;
+			this.#radiusX = radiusX;
+			this.#radiusY = radiusY;
+			this.#rotation = rotation;
+			this.#startAngle = startAngle;
+			this.#endAngle = endAngle;
+			this.#counterclockwise = counterclockwise;
+		}
+
+		getLastPoint() {
+
+			const centerPoint = this.#centerPoint;
+			const radiusX = this.#radiusX;
+			const radiusY = this.#radiusY;
+			const rotation = this.#rotation;
+			const endAngle = this.#endAngle;
+
+			// メモ: 角度の単位の変換による誤差をなくすため、変換行列を直接生成する
+			//       .translate(centerPoint.x, centerPoint.y).rotate(rotation * 180 / Math.PI)
+			const matrix = new DOMMatrixReadOnly([
+				Math.cos(rotation), Math.sin(rotation),
+				- Math.sin(rotation), Math.cos(rotation),
+				centerPoint.x, centerPoint.y,
+			]);
+			const point = new DOMPointReadOnly(
+				radiusX * Math.cos(endAngle),
+				radiusY * Math.sin(endAngle),
+			);
+
+			return matrix.transformPoint(point);
+
+		}
+
+		join(path, matrix, reversed) {
+
+			const centerPoint = matrix.transformPoint(this.#centerPoint);
+
+			const radiusX = this.#radiusX;
+			const radiusY = this.#radiusY;
+
+			// メモ: EdgeShape 用の matrix のため、rotate と translate のみしている
+			//       rotation' = - skewX = skewY
+			const skewY = Matrix.extractSkew(matrix).y;
+			const rotation = this.#rotation + skewY;
+
+			const [startAngle, endAngle] = (reversed ? (
+				[this.#endAngle, this.#startAngle]
+			) : (
+				[this.#startAngle, this.#endAngle]
+			));
+
+			// counterclockwise = (reversed ? ! this.#counterclockwise : this.#counterclockwise)
+			const counterclockwise = reversed !== this.#counterclockwise;
+
+			path.ellipse(
+				centerPoint.x, centerPoint.y,
+				radiusX, radiusY,
+				rotation,
+				startAngle, endAngle,
+				counterclockwise,
+			);
+
+			if ( reversed ) {
+				const endPoint = matrix.transformPoint(this.#startPoint);
+				path.lineTo(endPoint.x, endPoint.y);
+			}
+
+		}
+
+	};
+
 	const EdgeShape = class {
 
 		// 変換行列: (0, 0) と (1, 0) を入れ替えるような 180 度回転
 		static #matrixReversing = new DOMMatrixReadOnly([-1, 0, 0, -1, 1, 0]);
 
-		static #line = new this().#closePath().#freeze();
-		static #bezierCurve = new this().#bezierCurveTo(1 / 3, 0.5, 2 / 3, 0.5, 1, 0).#freeze();
+		static #line = new this().closePath().freeze();
+		static #bezierCurve = new this().bezierCurveTo(1 / 3, 0.5, 2 / 3, 0.5, 1, 0).freeze();
 
 		#lastPoint = new DOMPointReadOnly(0, 0);
 		#segments = [];
@@ -270,18 +550,18 @@
 			return this;
 		}
 
-		#closePath() {
-			return this.#lineTo(1, 0);
+		closePath() {
+			return this.lineTo(1, 0);
 		}
 
-		#lineTo(x, y) {
+		lineTo(x, y) {
 			return this.#addSegment(new Line(
 				this.#lastPoint,
 				new DOMPointReadOnly(x, y),
 			));
 		}
 
-		#bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y) {
+		bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y) {
 			return this.#addSegment(new BezierCurve(
 				this.#lastPoint,
 				new DOMPointReadOnly(cp1x, cp1y),
@@ -290,7 +570,45 @@
 			));
 		}
 
-		#freeze() {
+		quadraticCurveTo(cpx, cpy, x, y) {
+			return this.#addSegment(new QuadraticCurve(
+				this.#lastPoint,
+				new DOMPointReadOnly(cpx, cpy),
+				new DOMPointReadOnly(x, y),
+			));
+		}
+
+		arc(x, y, radius, startAngle, endAngle, counterclockwise = false) {
+			return this.#addSegment(new Arc(
+				this.#lastPoint,
+				new DOMPointReadOnly(x, y),
+				radius,
+				startAngle, endAngle,
+				counterclockwise,
+			));
+		}
+
+		arcTo(x1, y1, x2, y2, radius) {
+			return this.#addSegment(new ArcTo(
+				this.#lastPoint,
+				new DOMPointReadOnly(x1, y1),
+				new DOMPointReadOnly(x2, y2),
+				radius,
+			));
+		}
+
+		ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, counterclockwise = false) {
+			return this.#addSegment(new Ellipse(
+				this.#lastPoint,
+				new DOMPointReadOnly(x, y),
+				radiusX, radiusY,
+				rotation,
+				startAngle, endAngle,
+				counterclockwise,
+			));
+		}
+
+		freeze() {
 			Object.freeze(this.#segments);
 			return Object.freeze(this);
 		}
