@@ -264,26 +264,26 @@
 			return this.#bezierCurve;
 		}
 
-		#closePath() {
-			const segment = new Line(
-				this.#lastPoint,
-				new DOMPointReadOnly(1, 0),
-			);
+		#addSegment(segment) {
 			this.#segments.push(segment);
 			this.#lastPoint = segment.getLastPoint();
 			return this;
 		}
 
+		#closePath() {
+			return this.#addSegment(new Line(
+				this.#lastPoint,
+				new DOMPointReadOnly(1, 0),
+			));
+		}
+
 		#bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y) {
-			const segment = new BezierCurve(
+			return this.#addSegment(new BezierCurve(
 				this.#lastPoint,
 				new DOMPointReadOnly(cp1x, cp1y),
 				new DOMPointReadOnly(cp2x, cp2y),
 				new DOMPointReadOnly(x, y),
-			);
-			this.#segments.push(segment);
-			this.#lastPoint = segment.getLastPoint();
-			return this;
+			));
 		}
 
 		#freeze() {
