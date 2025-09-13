@@ -13,7 +13,7 @@
 ## Usage
 
 ```html
-<script src="spectre.js?v=3.0.0"></script>
+<script src="spectre.js?v=3.1.0"></script>
 ```
 
 ```javascript
