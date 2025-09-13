@@ -24,6 +24,8 @@ PERIODIC_TILING_MAIN_JS_PARAM="v=$(content_hash ./docs/periodic-tiling/main.js)"
 readonly PERIODIC_TILING_MAIN_JS_PARAM
 APERIODIC_TILING_MAIN_JS_PARAM="v=$(content_hash ./docs/aperiodic-tiling/main.js)"
 readonly APERIODIC_TILING_MAIN_JS_PARAM
+VARIOUS_SPECTRE_TILES_MAIN_JS_PARAM="v=$(content_hash ./docs/various-spectre-tiles/main.js)"
+readonly VARIOUS_SPECTRE_TILES_MAIN_JS_PARAM
 
 # 
 sed -Ei \
@@ -45,6 +47,11 @@ sed -Ei \
 	-e 's/(["/]spectre\.js\?)[^"]*/\1'"$SPECTRE_JS_PARAM"'/g' \
 	-e 's/(["/]main\.js\?)[^"]*/\1'"$APERIODIC_TILING_MAIN_JS_PARAM"'/g' \
 	./docs/aperiodic-tiling/index.html
+
+sed -Ei \
+	-e 's/(["/]spectre\.js\?)[^"]*/\1'"$SPECTRE_JS_PARAM"'/g' \
+	-e 's/(["/]main\.js\?)[^"]*/\1'"$VARIOUS_SPECTRE_TILES_MAIN_JS_PARAM"'/g' \
+	./docs/various-spectre-tiles/index.html
 
 # 
 echo 'OK'
