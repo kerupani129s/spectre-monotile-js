@@ -71,7 +71,6 @@ async extractImage({ type, quality } = {})
 static get LINE()
 static get BEZIER_CURVE()
 
-closePath()
 lineTo(x, y)
 bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y)
 quadraticCurveTo(cpx, cpy, x, y)

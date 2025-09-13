@@ -530,7 +530,7 @@
 		// 変換行列: (0, 0) と (1, 0) を入れ替えるような 180 度回転
 		static #matrixReversing = new DOMMatrixReadOnly([-1, 0, 0, -1, 1, 0]);
 
-		static #line = new this().closePath().freeze();
+		static #line = new this().freeze();
 		static #bezierCurve = new this().bezierCurveTo(1 / 3, 0.5, 2 / 3, 0.5, 1, 0).freeze();
 
 		#lastPoint = new DOMPointReadOnly(0, 0);
@@ -548,10 +548,6 @@
 			this.#segments.push(segment);
 			this.#lastPoint = segment.getLastPoint();
 			return this;
-		}
-
-		closePath() {
-			return this.lineTo(1, 0);
 		}
 
 		lineTo(x, y) {
@@ -650,7 +646,17 @@
 					)
 					.multiply(reversed ? EdgeShape.#matrixReversing : Matrix.IDENTITY);
 
+				// 
+				if ( reversed ) {
+					const lastPoint = matrix.transformPoint(this.#lastPoint);
+					path.lineTo(lastPoint.x, lastPoint.y);
+				}
+
 				this.#join(path, matrix, reversed);
+
+				if ( ! reversed ) {
+					path.lineTo(endPoint.x, endPoint.y);
+				}
 
 			}
 
