@@ -10,7 +10,9 @@
 static get IDENTITY()
 static get FLIPPING()
 
+static extractPosition(matrix)
 static extractScale(matrix)
+static extractSkew(matrix)
 ```
 
 ## Rendering
@@ -28,7 +30,6 @@ noStrokeQuad
 get canvas()
 
 get width()
-
 get height()
 
 set matrix(matrix)
@@ -69,6 +70,17 @@ async extractImage({ type, quality } = {})
 ```javascript
 static get LINE()
 static get BEZIER_CURVE()
+
+constructor()
+
+lineTo(x, y)
+bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y)
+quadraticCurveTo(cpx, cpy, x, y)
+arc(x, y, radius, startAngle, endAngle, counterclockwise = false)
+arcTo(x1, y1, x2, y2, radius)
+ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, counterclockwise = false)
+
+freeze()
 ```
 
 ## Tiles
